@@ -5,6 +5,7 @@
     <string name="edit">सम्पादन</string>
     <string name="open_camera">क्यामेरा खोल्नुहोस</string>
     <string name="hidden">(लुकेको)</string>
+    <string name="excluded">(excluded)</string>
     <string name="pin_folder">फोल्डरलाई पिन गर्नुहोस</string>
     <string name="unpin_folder">फोल्डरलाई पिन गर्नुहोस</string>
     <string name="pin_to_the_top">सबैभन्दा माथि पिन गर्नुहोस</string>
@@ -77,6 +78,8 @@
     <string name="invalid_values">Please enter a valid resolution</string>
     <!-- Editor -->
     <string name="editor">सम्पादक</string>
+    <string name="basic_editor">Basic Editor</string>
+    <string name="advanced_editor">Advanced Editor</string>
     <string name="rotate">घुमाउने</string>
     <string name="invalid_image_path">Invalid image path</string>
     <string name="invalid_video_path">Invalid video path</string>
@@ -212,6 +215,8 @@
     <string name="alternative_media_access">Alternatively, you can allow accessing media files only. In that case you will not be able to work with hidden files though.</string>
     <string name="media_only">Media only</string>
     <string name="all_files">All files</string>
+    <string name="search_all_files">Search all files instead of folders on the main screen</string>
+    <string name="show_all_folders">Show a menu button for toggling Show All Folders Content quickly</string>
     <!-- Setting sections -->
     <string name="thumbnails">Thumbnails</string>
     <string name="fullscreen_media">Fullscreen media</string>

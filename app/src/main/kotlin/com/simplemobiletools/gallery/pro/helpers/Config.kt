@@ -550,4 +550,12 @@ class Config(context: Context) : BaseConfig(context) {
     var avoidShowingAllFilesPrompt: Boolean
         get() = prefs.getBoolean(AVOID_SHOWING_ALL_FILES_PROMPT, false)
         set(avoidShowingAllFilesPrompt) = prefs.edit().putBoolean(AVOID_SHOWING_ALL_FILES_PROMPT, avoidShowingAllFilesPrompt).apply()
+
+    var searchAllFilesByDefault: Boolean
+        get() = prefs.getBoolean(SEARCH_ALL_FILES_BY_DEFAULT, false)
+        set(searchAllFilesByDefault) = prefs.edit().putBoolean(SEARCH_ALL_FILES_BY_DEFAULT, searchAllFilesByDefault).apply()
+
+    var lastExportedFavoritesFolder: String
+        get() = prefs.getString(LAST_EXPORTED_FAVORITES_FOLDER, "")!!
+        set(lastExportedFavoritesFolder) = prefs.edit().putString(LAST_EXPORTED_FAVORITES_FOLDER, lastExportedFavoritesFolder).apply()
 }

@@ -5,6 +5,7 @@
     <string name="edit">Editar</string>
     <string name="open_camera">Abrir cámara</string>
     <string name="hidden">(oculto)</string>
+    <string name="excluded">(excluded)</string>
     <string name="pin_folder">Fixar cartafol</string>
     <string name="unpin_folder">Soltar cartafol</string>
     <string name="pin_to_the_top">Fixar arriba</string>
@@ -77,6 +78,8 @@
     <string name="invalid_values">Por favor escribe unha resolución válida</string>
     <!-- Editor -->
     <string name="editor">Editor</string>
+    <string name="basic_editor">Basic Editor</string>
+    <string name="advanced_editor">Advanced Editor</string>
     <string name="rotate">Rotar</string>
     <string name="invalid_image_path">Ruta á imaxe non válida</string>
     <string name="invalid_video_path">Ruta do vídeo non válida</string>
@@ -212,6 +215,8 @@
     <string name="alternative_media_access">Alternativamente, só pode permitilo acceso a ficheiros multimedia. Nese caso non poderás traballar con ficheiros ocultos.</string>
     <string name="media_only">Só medios</string>
     <string name="all_files">Todolos ficheiros</string>
+    <string name="search_all_files">Search all files instead of folders on the main screen</string>
+    <string name="show_all_folders">Show a menu button for toggling Show All Folders Content quickly</string>
     <!-- Setting sections -->
     <string name="thumbnails">Miniaturas</string>
     <string name="fullscreen_media">Medios a pantalla completa</string>

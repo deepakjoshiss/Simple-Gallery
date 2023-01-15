@@ -5,6 +5,7 @@
     <string name="edit">Edita</string>
     <string name="open_camera">Obre la càmera</string>
     <string name="hidden">(ocult)</string>
+    <string name="excluded">(exclòs)</string>
     <string name="pin_folder">Fixa la carpeta</string>
     <string name="unpin_folder">No fixis la carpeta</string>
     <string name="pin_to_the_top">Fixa a dalt</string>
@@ -77,6 +78,8 @@
     <string name="invalid_values">Introduïu una resolució vàlida</string>
     <!-- Editor -->
     <string name="editor">Editor</string>
+    <string name="basic_editor">Editor bàsic</string>
+    <string name="advanced_editor">Editor avançat</string>
     <string name="rotate">Gira</string>
     <string name="invalid_image_path">El camí de la imatge no és vàlid</string>
     <string name="invalid_video_path">El camí del vídeo no és vàlid</string>
@@ -212,6 +215,8 @@
     <string name="alternative_media_access">Alternativament, podeu permetre l\'accés només a fitxers multimèdia. En aquest cas, però, no podreu treballar amb fitxers ocults.</string>
     <string name="media_only">Només fitxers multimèdia</string>
     <string name="all_files">Tots els fitxers</string>
+    <string name="search_all_files">Cerca tots els fitxers en lloc de carpetes a la pantalla principal</string>
+    <string name="show_all_folders">Mostra un botó de menú per commutar «Mostra el contingut de totes les carpetes ràpidament»</string>
     <!-- Setting sections -->
     <string name="thumbnails">Miniatures</string>
     <string name="fullscreen_media">Contingut multimèdia a pantalla completa</string>

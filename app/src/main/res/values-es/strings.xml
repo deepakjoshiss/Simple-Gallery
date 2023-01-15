@@ -5,6 +5,7 @@
     <string name="edit">Editar</string>
     <string name="open_camera">Abrir la cámara</string>
     <string name="hidden">(Oculto)</string>
+    <string name="excluded">(no incluido)</string>
     <string name="pin_folder">Fijar carpeta</string>
     <string name="unpin_folder">No fijar carpeta</string>
     <string name="pin_to_the_top">Anclar arriba</string>
@@ -77,6 +78,8 @@
     <string name="invalid_values">Por favor, introduzca una resolución válida</string>
     <!-- Editor -->
     <string name="editor">Editor</string>
+    <string name="basic_editor">Editor básico</string>
+    <string name="advanced_editor">Editor avanzado</string>
     <string name="rotate">Rotar</string>
     <string name="invalid_image_path">Ruta de imagen inválida</string>
     <string name="invalid_video_path">Ruta de video inválida</string>
@@ -212,6 +215,8 @@
     <string name="alternative_media_access">Alternativamente, puede permitir el acceso a los archivos multimedia solamente. Sin embargo, en ese caso no podrá trabajar con los archivos ocultos.</string>
     <string name="media_only">Sólo archivos multimedia</string>
     <string name="all_files">Todos los archivos</string>
+    <string name="search_all_files">Buscar todos los archivos en lugar de carpetas en la pantalla de inicio</string>
+    <string name="show_all_folders">Mostrar un botón de menú para ver rápidamente el contenido de todas las carpetas</string>
     <!-- Setting sections -->
     <string name="thumbnails">Miniaturas</string>
     <string name="fullscreen_media">Medios a pantalla completa</string>

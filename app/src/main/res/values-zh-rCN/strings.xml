@@ -5,6 +5,7 @@
     <string name="edit">编辑</string>
     <string name="open_camera">打开相机</string>
     <string name="hidden">（已隐藏）</string>
+    <string name="excluded">(已排除)</string>
     <string name="pin_folder">固定文件夹</string>
     <string name="unpin_folder">取消固定文件夹</string>
     <string name="pin_to_the_top">置顶固定</string>
@@ -77,6 +78,8 @@
     <string name="invalid_values">请输入有效的分辨率</string>
     <!-- Editor -->
     <string name="editor">编辑器</string>
+    <string name="basic_editor">基础编辑器</string>
+    <string name="advanced_editor">高级编辑器</string>
     <string name="rotate">旋转</string>
     <string name="invalid_image_path">无效的图片路径</string>
     <string name="invalid_video_path">无效的视频路径</string>
@@ -197,7 +200,7 @@
     <string name="thumbnail_spacing">缩略图间距</string>
     <string name="show_file_count_line">在单独一行中显示计数</string>
     <string name="show_file_count_brackets">在括号中显示计数</string>
-    <string name="show_file_count_none">不显示计数</string>
+    <string name="show_file_count_none">不显示文件数</string>
     <string name="limit_folder_title">将较长的文件夹标题字符限制为1行</string>
     <string name="square">方形</string>
     <string name="rounded_corners">圆角</string>
@@ -212,6 +215,8 @@
     <string name="alternative_media_access">你也可以只允许访问媒体文件。但那样的话将无法处理隐藏的文件。</string>
     <string name="media_only">仅媒体文件</string>
     <string name="all_files">所有文件</string>
+    <string name="search_all_files">在主屏幕上搜索所有文件而不是文件夹</string>
+    <string name="show_all_folders">显示可快速切换“显示所有文件夹内容”选项的菜单按钮</string>
     <!-- Setting sections -->
     <string name="thumbnails">缩略图</string>
     <string name="fullscreen_media">全屏显示媒体</string>

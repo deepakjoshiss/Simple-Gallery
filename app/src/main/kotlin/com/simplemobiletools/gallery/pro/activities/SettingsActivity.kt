@@ -1,9 +1,11 @@
 package com.simplemobiletools.gallery.pro.activities
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
+import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.simplemobiletools.commons.dialogs.*
@@ -18,16 +20,23 @@ import com.simplemobiletools.gallery.pro.models.AlbumCover
 import kotlinx.android.synthetic.main.activity_settings.*
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 import java.util.*
 import kotlin.system.exitProcess
 
 class SettingsActivity : SimpleActivity() {
     private val PICK_IMPORT_SOURCE_INTENT = 1
+    private val SELECT_EXPORT_FAVORITES_FILE_INTENT = 2
+    private val SELECT_IMPORT_FAVORITES_FILE_INTENT = 3
     private var mRecycleBinContentSize = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        isMaterialActivity = true
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+
+        updateMaterialActivityViews(settings_coordinator, settings_holder, useTransparentNavigation = true, useTopSearchMenu = false)
+        setupMaterialScrollListener(settings_nested_scrollview, settings_toolbar)
     }
 
     override fun onResume() {
@@ -45,6 +54,7 @@ class SettingsActivity : SimpleActivity() {
         setupManageIncludedFolders()
         setupManageExcludedFolders()
         setupManageHiddenFolders()
+        setupSearchAllFiles()
         setupShowHiddenItems()
         setupAutoplayVideos()
         setupRememberLastVideo()
@@ -86,11 +96,13 @@ class SettingsActivity : SimpleActivity() {
         setupEmptyRecycleBin()
         updateTextColors(settings_holder)
         setupClearCache()
+        setupExportFavorites()
+        setupImportFavorites()
         setupExportSettings()
         setupImportSettings()
 
         arrayOf(
-            settings_color_customization_label,
+            settings_color_customization_section_label,
             settings_general_settings_label,
             settings_videos_label,
             settings_thumbnails_label,
@@ -106,24 +118,6 @@ class SettingsActivity : SimpleActivity() {
         ).forEach {
             it.setTextColor(getProperPrimaryColor())
         }
-
-        arrayOf(
-            settings_color_customization_holder,
-            settings_general_settings_holder,
-            settings_videos_holder,
-            settings_thumbnails_holder,
-            settings_scrolling_holder,
-            settings_fullscreen_media_holder,
-            settings_deep_zoomable_images_holder,
-            settings_extended_details_holder,
-            settings_security_holder,
-            settings_file_operations_holder,
-            settings_bottom_actions_holder,
-            settings_recycle_bin_holder,
-            settings_migrating_holder
-        ).forEach {
-            it.background.applyColorFilter(getProperBackgroundColor().getContrastColor())
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
@@ -131,11 +125,17 @@ class SettingsActivity : SimpleActivity() {
         if (requestCode == PICK_IMPORT_SOURCE_INTENT && resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
             val inputStream = contentResolver.openInputStream(resultData.data!!)
             parseFile(inputStream)
+        } else if (requestCode == SELECT_EXPORT_FAVORITES_FILE_INTENT && resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
+            val outputStream = contentResolver.openOutputStream(resultData.data!!)
+            exportFavoritesTo(outputStream)
+        } else if (requestCode == SELECT_IMPORT_FAVORITES_FILE_INTENT && resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
+            val inputStream = contentResolver.openInputStream(resultData.data!!)
+            importFavorites(inputStream)
         }
     }
 
     private fun setupCustomizeColors() {
-        settings_customize_colors_holder.setOnClickListener {
+        settings_color_customization_holder.setOnClickListener {
             startCustomizationActivity()
         }
     }
@@ -153,11 +153,6 @@ class SettingsActivity : SimpleActivity() {
     private fun setupLanguage() {
         settings_language.text = Locale.getDefault().displayLanguage
         settings_language_holder.beVisibleIf(isTiramisuPlus())
-
-        if (settings_use_english_holder.isGone() && settings_language_holder.isGone()) {
-            settings_change_date_time_format_holder.background = resources.getDrawable(R.drawable.ripple_top_corners, theme)
-        }
-
         settings_language_holder.setOnClickListener {
             launchChangeAppLanguageIntent()
         }
@@ -242,6 +237,14 @@ class SettingsActivity : SimpleActivity() {
     private fun toggleHiddenItems() {
         settings_show_hidden_items.toggle()
         config.showHiddenMedia = settings_show_hidden_items.isChecked
+    }
+
+    private fun setupSearchAllFiles() {
+        settings_search_all_files.isChecked = config.searchAllFilesByDefault
+        settings_search_all_files_holder.setOnClickListener {
+            settings_search_all_files.toggle()
+            config.searchAllFilesByDefault = settings_search_all_files.isChecked
+        }
     }
 
     private fun setupAutoplayVideos() {
@@ -514,12 +517,6 @@ class SettingsActivity : SimpleActivity() {
         settings_allow_rotating_with_gestures_holder.beVisibleIf(config.allowZoomingImages)
         settings_show_highest_quality_holder.beVisibleIf(config.allowZoomingImages)
         settings_allow_one_to_one_zoom_holder.beVisibleIf(config.allowZoomingImages)
-
-        if (config.allowZoomingImages) {
-            settings_allow_zooming_images_holder.background = resources.getDrawable(R.drawable.ripple_top_corners, theme)
-        } else {
-            settings_allow_zooming_images_holder.background = resources.getDrawable(R.drawable.ripple_all_corners, theme)
-        }
     }
 
     private fun setupShowHighestQuality() {
@@ -577,12 +574,6 @@ class SettingsActivity : SimpleActivity() {
     private fun updateExtendedDetailsButtons() {
         settings_manage_extended_details_holder.beVisibleIf(config.showExtendedDetails)
         settings_hide_extended_details_holder.beVisibleIf(config.showExtendedDetails)
-
-        if (config.showExtendedDetails) {
-            settings_show_extended_details_holder.background = resources.getDrawable(R.drawable.ripple_top_corners, theme)
-        } else {
-            settings_show_extended_details_holder.background = resources.getDrawable(R.drawable.ripple_all_corners, theme)
-        }
     }
 
     private fun setupSkipDeleteConfirmation() {
@@ -619,11 +610,11 @@ class SettingsActivity : SimpleActivity() {
 
     private fun setupBottomActions() {
         settings_bottom_actions_checkbox.isChecked = config.bottomActions
-        updateManageBottomActionsButtons()
+        settings_manage_bottom_actions_holder.beVisibleIf(config.bottomActions)
         settings_bottom_actions_checkbox_holder.setOnClickListener {
             settings_bottom_actions_checkbox.toggle()
             config.bottomActions = settings_bottom_actions_checkbox.isChecked
-            updateManageBottomActionsButtons()
+            settings_manage_bottom_actions_holder.beVisibleIf(config.bottomActions)
         }
     }
 
@@ -636,15 +627,6 @@ class SettingsActivity : SimpleActivity() {
                     config.visibleBottomActions = DEFAULT_BOTTOM_ACTIONS
                 }
             }
-        }
-    }
-
-    private fun updateManageBottomActionsButtons() {
-        settings_manage_bottom_actions_holder.beVisibleIf(config.bottomActions)
-        if (config.bottomActions) {
-            settings_bottom_actions_checkbox_holder.background = resources.getDrawable(R.drawable.ripple_top_corners, theme)
-        } else {
-            settings_bottom_actions_checkbox_holder.background = resources.getDrawable(R.drawable.ripple_all_corners, theme)
         }
     }
 
@@ -682,12 +664,6 @@ class SettingsActivity : SimpleActivity() {
         settings_show_recycle_bin_last_holder.beVisibleIf(config.useRecycleBin && config.showRecycleBinAtFolders)
         settings_empty_recycle_bin_holder.beVisibleIf(config.useRecycleBin)
         settings_show_recycle_bin_holder.beVisibleIf(config.useRecycleBin)
-
-        if (config.useRecycleBin) {
-            settings_use_recycle_bin_holder.background = resources.getDrawable(R.drawable.ripple_top_corners, theme)
-        } else {
-            settings_use_recycle_bin_holder.background = resources.getDrawable(R.drawable.ripple_all_corners, theme)
-        }
     }
 
     private fun setupEmptyRecycleBin() {
@@ -738,6 +714,115 @@ class SettingsActivity : SimpleActivity() {
                     settings_clear_cache_size.text = cacheDir.getProperSize(true).formatSize()
                 }
             }
+        }
+    }
+
+    private fun setupExportFavorites() {
+        settings_export_favorites_holder.setOnClickListener {
+            if (isQPlus()) {
+                ExportFavoritesDialog(this, getExportFavoritesFilename(), true) { path, filename ->
+                    Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TITLE, filename)
+                        addCategory(Intent.CATEGORY_OPENABLE)
+
+                        try {
+                            startActivityForResult(this, SELECT_EXPORT_FAVORITES_FILE_INTENT)
+                        } catch (e: ActivityNotFoundException) {
+                            toast(R.string.system_service_disabled, Toast.LENGTH_LONG)
+                        } catch (e: Exception) {
+                            showErrorToast(e)
+                        }
+                    }
+                }
+            } else {
+                handlePermission(PERMISSION_WRITE_STORAGE) {
+                    if (it) {
+                        ExportFavoritesDialog(this, getExportFavoritesFilename(), false) { path, filename ->
+                            val file = File(path)
+                            getFileOutputStream(file.toFileDirItem(this), true) {
+                                exportFavoritesTo(it)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun exportFavoritesTo(outputStream: OutputStream?) {
+        if (outputStream == null) {
+            toast(R.string.unknown_error_occurred)
+            return
+        }
+
+        ensureBackgroundThread {
+            val favoritePaths = favoritesDB.getValidFavoritePaths()
+            if (favoritePaths.isNotEmpty()) {
+                outputStream.bufferedWriter().use { out ->
+                    favoritePaths.forEach { path ->
+                        out.writeLn(path)
+                    }
+                }
+
+                toast(R.string.exporting_successful)
+            } else {
+                toast(R.string.no_items_found)
+            }
+        }
+    }
+
+    private fun getExportFavoritesFilename(): String {
+        val appName = baseConfig.appId.removeSuffix(".debug").removeSuffix(".pro").removePrefix("com.simplemobiletools.")
+        return "$appName-favorites_${getCurrentFormattedDateTime()}"
+    }
+
+    private fun setupImportFavorites() {
+        settings_import_favorites_holder.setOnClickListener {
+            if (isQPlus()) {
+                Intent(Intent.ACTION_GET_CONTENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "text/plain"
+                    startActivityForResult(this, SELECT_IMPORT_FAVORITES_FILE_INTENT)
+                }
+            } else {
+                handlePermission(PERMISSION_READ_STORAGE) {
+                    if (it) {
+                        FilePickerDialog(this) {
+                            ensureBackgroundThread {
+                                importFavorites(File(it).inputStream())
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun importFavorites(inputStream: InputStream?) {
+        if (inputStream == null) {
+            toast(R.string.unknown_error_occurred)
+            return
+        }
+
+        ensureBackgroundThread {
+            var importedItems = 0
+            inputStream.bufferedReader().use {
+                while (true) {
+                    try {
+                        val line = it.readLine() ?: break
+                        if (getDoesFilePathExist(line)) {
+                            val favorite = getFavoriteFromPath(line)
+                            favoritesDB.insert(favorite)
+                            importedItems++
+                        }
+                    } catch (e: Exception) {
+                        showErrorToast(e)
+                    }
+                }
+            }
+
+            toast(if (importedItems > 0) R.string.importing_successful else R.string.no_entries_for_importing)
         }
     }
 
@@ -828,6 +913,7 @@ class SettingsActivity : SimpleActivity() {
                 put(LIMIT_FOLDER_TITLE, config.limitFolderTitle)
                 put(THUMBNAIL_SPACING, config.thumbnailSpacing)
                 put(FILE_ROUNDED_CORNERS, config.fileRoundedCorners)
+                put(SEARCH_ALL_FILES_BY_DEFAULT, config.searchAllFilesByDefault)
             }
 
             exportSettings(configItems)
@@ -969,6 +1055,7 @@ class SettingsActivity : SimpleActivity() {
                 LIMIT_FOLDER_TITLE -> config.limitFolderTitle = value.toBoolean()
                 THUMBNAIL_SPACING -> config.thumbnailSpacing = value.toInt()
                 FILE_ROUNDED_CORNERS -> config.fileRoundedCorners = value.toBoolean()
+                SEARCH_ALL_FILES_BY_DEFAULT -> config.searchAllFilesByDefault = value.toBoolean()
                 ALBUM_COVERS -> {
                     val existingCovers = config.parseAlbumCovers()
                     val existingCoverPaths = existingCovers.map { it.path }.toMutableList() as ArrayList<String>

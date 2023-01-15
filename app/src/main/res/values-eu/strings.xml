@@ -5,6 +5,7 @@
     <string name="edit">Editatu</string>
     <string name="open_camera">Ireki kamera</string>
     <string name="hidden">(ezkutatuta)</string>
+    <string name="excluded">(excluded)</string>
     <string name="pin_folder">Ainguratu karpeta</string>
     <string name="unpin_folder">Kendu aingura karpetari</string>
     <string name="pin_to_the_top">Ainguratu goian</string>
@@ -75,6 +76,8 @@
     <string name="invalid_values">Sartu baliozko bereizmena</string>
     <!-- Editor -->
     <string name="editor">Editorea</string>
+    <string name="basic_editor">Basic Editor</string>
+    <string name="advanced_editor">Advanced Editor</string>
     <string name="rotate">Biratu</string>
     <string name="invalid_image_path">Irudiaren bide-izen baliogabea</string>
     <string name="invalid_video_path">Bideoaren bide-izen baliogabea</string>
@@ -210,6 +213,8 @@
     <string name="alternative_media_access">Alternatively, you can allow accessing media files only. In that case you will not be able to work with hidden files though.</string>
     <string name="media_only">Media only</string>
     <string name="all_files">All files</string>
+    <string name="search_all_files">Search all files instead of folders on the main screen</string>
+    <string name="show_all_folders">Show a menu button for toggling Show All Folders Content quickly</string>
     <!-- Setting sections -->
     <string name="thumbnails">Iruditxoak</string>
     <string name="fullscreen_media">Pantaila osoko multimedia</string>

@@ -5,6 +5,7 @@
     <string name="edit">Modifier</string>
     <string name="open_camera">Ouvrir l\'appareil photo</string>
     <string name="hidden">(caché)</string>
+    <string name="excluded">(exclu)</string>
     <string name="pin_folder">Épingler le dossier</string>
     <string name="unpin_folder">Libérer le dossier</string>
     <string name="pin_to_the_top">Épingler le dossier</string>
@@ -77,6 +78,8 @@
     <string name="invalid_values">Veuillez entrer une résolution valide</string>
     <!-- Editor -->
     <string name="editor">Éditeur</string>
+    <string name="basic_editor">Éditeur de base</string>
+    <string name="advanced_editor">Éditeur avancé</string>
     <string name="rotate">Pivoter</string>
     <string name="invalid_image_path">Emplacement d\'image invalide</string>
     <string name="invalid_video_path">Emplacement de vidéo invalide</string>
@@ -212,6 +215,8 @@
     <string name="alternative_media_access">Vous pouvez également n\'autoriser que l\'accès aux fichiers multimédias. Dans ce cas, vous ne pourrez cependant pas travailler avec les fichiers cachés.</string>
     <string name="media_only">Médias uniquement</string>
     <string name="all_files">Tous les fichiers</string>
+    <string name="search_all_files">Rechercher des fichiers au lieu des dossiers sur l\'écran principal</string>
+    <string name="show_all_folders">Afficher un bouton de menu pour afficher rapidement le contenu de tous les dossiers</string>
     <!-- Setting sections -->
     <string name="thumbnails">Miniatures</string>
     <string name="fullscreen_media">Plein écran</string>

@@ -5,6 +5,7 @@
     <string name="edit">편집</string>
     <string name="open_camera">카메라 열기</string>
     <string name="hidden">(숨겨짐)</string>
+    <string name="excluded">(excluded)</string>
     <string name="pin_folder">폴더 고정</string>
     <string name="unpin_folder">폴더 고정 해제</string>
     <string name="pin_to_the_top">상단에 고정</string>
@@ -77,6 +78,8 @@
     <string name="invalid_values">잘못된 비율입니다.</string>
     <!-- Editor -->
     <string name="editor">편집</string>
+    <string name="basic_editor">Basic Editor</string>
+    <string name="advanced_editor">Advanced Editor</string>
     <string name="rotate">회전</string>
     <string name="invalid_image_path">유효하지 않은 사진 경로</string>
     <string name="invalid_video_path">Invalid video path</string>
@@ -212,6 +215,8 @@
     <string name="alternative_media_access">Alternatively, you can allow accessing media files only. In that case you will not be able to work with hidden files though.</string>
     <string name="media_only">Media only</string>
     <string name="all_files">All files</string>
+    <string name="search_all_files">Search all files instead of folders on the main screen</string>
+    <string name="show_all_folders">Show a menu button for toggling Show All Folders Content quickly</string>
     <!-- Setting sections -->
     <string name="thumbnails">섬네일</string>
     <string name="fullscreen_media">전체화면</string>

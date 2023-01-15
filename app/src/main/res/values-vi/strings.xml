@@ -5,6 +5,7 @@
     <string name="edit">Chỉnh sửa</string>
     <string name="open_camera">Mở Camera</string>
     <string name="hidden">(ẩn)</string>
+    <string name="excluded">(excluded)</string>
     <string name="pin_folder">Ghim thư mục</string>
     <string name="unpin_folder">Bỏ ghim thư mục</string>
     <string name="pin_to_the_top">Ghim lên đầu</string>
@@ -75,6 +76,8 @@
     <string name="invalid_values">Vui lòng nhập độ phân giải hợp lệ</string>
     <!-- Editor -->
     <string name="editor">Trình biên tập</string>
+    <string name="basic_editor">Basic Editor</string>
+    <string name="advanced_editor">Advanced Editor</string>
     <string name="rotate">Xoay</string>
     <string name="invalid_image_path">Đường dẫn hình ảnh không hợp lệ</string>
     <string name="invalid_video_path">Đường dẫn video không hợp lệ</string>
@@ -210,6 +213,8 @@
     <string name="alternative_media_access">Alternatively, you can allow accessing media files only. In that case you will not be able to work with hidden files though.</string>
     <string name="media_only">Media only</string>
     <string name="all_files">All files</string>
+    <string name="search_all_files">Search all files instead of folders on the main screen</string>
+    <string name="show_all_folders">Show a menu button for toggling Show All Folders Content quickly</string>
     <!-- Setting sections -->
     <string name="thumbnails">Hình thu nhỏ</string>
     <string name="fullscreen_media">Toàn màn hình</string>

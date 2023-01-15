@@ -5,6 +5,7 @@
     <string name="edit">Uredi</string>
     <string name="open_camera">Zaženi fotoaparat</string>
     <string name="hidden">(skrito)</string>
+    <string name="excluded">(excluded)</string>
     <string name="pin_folder">Pripni mapo</string>
     <string name="unpin_folder">Odpni mapo</string>
     <string name="pin_to_the_top">Pripni na vrh</string>
@@ -77,6 +78,8 @@
     <string name="invalid_values">Vnesite veljavno ločljivost</string>
     <!-- Editor -->
     <string name="editor">Urejevalnik</string>
+    <string name="basic_editor">Basic Editor</string>
+    <string name="advanced_editor">Advanced Editor</string>
     <string name="rotate">Zavrti</string>
     <string name="invalid_image_path">Napačna pot</string>
     <string name="invalid_video_path">Nepravilna video pot</string>
@@ -212,6 +215,8 @@
     <string name="alternative_media_access">Alternatively, you can allow accessing media files only. In that case you will not be able to work with hidden files though.</string>
     <string name="media_only">Media only</string>
     <string name="all_files">Vse datoteke</string>
+    <string name="search_all_files">Search all files instead of folders on the main screen</string>
+    <string name="show_all_folders">Show a menu button for toggling Show All Folders Content quickly</string>
     <!-- Setting sections -->
     <string name="thumbnails">Sličice</string>
     <string name="fullscreen_media">Celozaslonski prikaz</string>

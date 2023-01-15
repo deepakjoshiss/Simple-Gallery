@@ -5,6 +5,7 @@
     <string name="edit">Bewerken</string>
     <string name="open_camera">Camera</string>
     <string name="hidden">(verborgen)</string>
+    <string name="excluded">(uitgesloten)</string>
     <string name="pin_folder">Map vastzetten</string>
     <string name="unpin_folder">Map losmaken</string>
     <string name="pin_to_the_top">Bovenaan vastzetten</string>
@@ -30,7 +31,7 @@
     <string name="upgraded_from_free">Het lijkt erop dat dit een upgrade is vanaf de oude gratis versie. Deze oude versie, met de knop \"Upgraden naar Pro\" bovenaan de instellingen, kan nu gedeïnstalleerd worden.
 \n
 \nDe items in de prullenbak zullen dan wel worden verwijderd, favorieten en instellingen zullen ook opnieuw moeten worden geconfigureerd!</string>
-    <string name="switch_to_file_search">Zoeken in alle zichtbare mappen</string>
+    <string name="switch_to_file_search">Naar bestanden in alle zichtbare mappen zoeken</string>
     <string name="set_as_default_folder">Als standaardmap instellen</string>
     <string name="unset_as_default_folder">Standaardmap herstellen</string>
     <string name="reorder_by_dragging">Volgorde mappen bepalen met sleepgebaren</string>
@@ -73,6 +74,8 @@
     <string name="invalid_values">Voer geldige afmetingen in</string>
     <!-- Editor -->
     <string name="editor">Bewerken</string>
+    <string name="basic_editor">Eenvoudige bewerking</string>
+    <string name="advanced_editor">Uitgebreide bewerking</string>
     <string name="rotate">Draaien</string>
     <string name="invalid_image_path">Ongeldig pad naar afbeelding</string>
     <string name="invalid_video_path">Ongeldig pad naar video</string>
@@ -208,6 +211,8 @@
     <string name="alternative_media_access">De app kan ook toegang tot alleen mediabestanden worden gegeven, maar er kan dan niet worden gewerkt met verborgen bestanden.</string>
     <string name="media_only">Mediabestanden</string>
     <string name="all_files">Alle bestanden</string>
+    <string name="search_all_files">Op het beginscherm niet naar mappen, maar bestanden in de zichtbare mappen zoeken</string>
+    <string name="show_all_folders">Menuknop ’Inhoud van alle mappen tonen’ tonen</string>
     <!-- Setting sections -->
     <string name="thumbnails">Miniaturen</string>
     <string name="fullscreen_media">Volledig scherm</string>

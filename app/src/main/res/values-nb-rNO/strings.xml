@@ -5,6 +5,7 @@
     <string name="edit">Rediger</string>
     <string name="open_camera">Åpne kamera</string>
     <string name="hidden">(skjult)</string>
+    <string name="excluded">(excluded)</string>
     <string name="pin_folder">Fest mappe</string>
     <string name="unpin_folder">Løsne mappe</string>
     <string name="pin_to_the_top">Fest til toppen</string>
@@ -77,6 +78,8 @@
     <string name="invalid_values">Oppfør en gyldig oppløsning</string>
     <!-- Editor -->
     <string name="editor">Redigering</string>
+    <string name="basic_editor">Basic Editor</string>
+    <string name="advanced_editor">Advanced Editor</string>
     <string name="rotate">Roter</string>
     <string name="invalid_image_path">Ugyldig bildebane</string>
     <string name="invalid_video_path">Ugyldig videobane</string>
@@ -212,6 +215,8 @@
     <string name="alternative_media_access">Alternativt kan du kun tillate tilgang til mediafiler. I dette tilfellet vil du riktignok ikke kunne arbeide med skjulte filer.</string>
     <string name="media_only">Kun media</string>
     <string name="all_files">Alle filer</string>
+    <string name="search_all_files">Search all files instead of folders on the main screen</string>
+    <string name="show_all_folders">Show a menu button for toggling Show All Folders Content quickly</string>
     <!-- Setting sections -->
     <string name="thumbnails">Minibilder</string>
     <string name="fullscreen_media">Mediavisning</string>
