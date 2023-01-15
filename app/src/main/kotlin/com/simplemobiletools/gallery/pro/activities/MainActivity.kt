@@ -5,6 +5,7 @@ import android.app.SearchManager
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -31,6 +32,8 @@ import com.simplemobiletools.commons.views.MyRecyclerView
 import com.simplemobiletools.gallery.pro.BuildConfig
 import com.simplemobiletools.gallery.pro.R
 import com.simplemobiletools.gallery.pro.adapters.DirectoryAdapter
+import com.simplemobiletools.gallery.pro.aes.AESActivity
+import com.simplemobiletools.gallery.pro.aes.AESDonateDialog
 import com.simplemobiletools.gallery.pro.databases.GalleryDatabase
 import com.simplemobiletools.gallery.pro.dialogs.ChangeSortingDialog
 import com.simplemobiletools.gallery.pro.dialogs.ChangeViewTypeDialog
@@ -90,7 +93,6 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         appLaunched(BuildConfig.APPLICATION_ID)
-
         if (savedInstanceState == null) {
             config.temporarilyShowHidden = false
             config.temporarilyShowExcluded = false
@@ -157,6 +159,11 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
                 finish()
             }
         }
+        if (!mIsPickImageIntent && !mIsPickVideoIntent) {
+            Intent(this, AESActivity::class.java).apply {
+                startActivity(this)
+            };
+        }
     }
 
     private fun handleMediaPermissions(callback: (granted: Boolean) -> Unit) {
@@ -176,6 +183,7 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
         }
     }
 
+
     override fun onStart() {
         super.onStart()
         mTempShowHiddenHandler.removeCallbacksAndMessages(null)
@@ -187,7 +195,8 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
         mDateFormat = config.dateFormat
         mTimeFormat = getTimeFormat()
 
-        setupToolbar(directories_toolbar, searchMenuItem = mSearchMenuItem)
+        setupToolbar(directories_toolbar, searchMenuItem = mSearchMenuItem, statusBarColor = resources.getColor(R.color.aes_toolbar_color))
+        window.statusBarColor = resources.getColor(R.color.aes_toolbar_color)
         refreshMenuItems()
 
         if (mStoredAnimateGifs != config.animateGifs) {
@@ -304,6 +313,10 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
         }
     }
 
+    fun launchAESDonate() {
+        AESDonateDialog(this)
+    }
+
     private fun refreshMenuItems() {
         if (!mIsThirdPartyIntent) {
             directories_toolbar.menu.apply {
@@ -354,6 +367,7 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
                 R.id.set_as_default_folder -> setAsDefaultFolder()
                 R.id.more_apps_from_us -> launchMoreAppsFromUsIntent()
                 R.id.settings -> launchSettings()
+                R.id.donate -> launchAESDonate()
                 R.id.about -> launchAbout()
                 else -> return@setOnMenuItemClickListener false
             }

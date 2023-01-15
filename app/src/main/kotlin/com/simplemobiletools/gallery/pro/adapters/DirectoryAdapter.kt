@@ -819,12 +819,12 @@ class DirectoryAdapter(
                 dir_location.setImageResource(if (directory.location == LOCATION_SD) R.drawable.ic_sd_card_vector else R.drawable.ic_usb_vector)
             }
 
-            photo_cnt.text = directory.subfoldersMediaCount.toString()
+            photo_cnt.text = directory.subfoldersMediaCount.toString() + " items"
             photo_cnt.beVisibleIf(showMediaCount == FOLDER_MEDIA_CNT_LINE)
 
             if (limitFolderTitle) {
                 dir_name.setSingleLine()
-                dir_name.ellipsize = TextUtils.TruncateAt.MIDDLE
+                dir_name.ellipsize = TextUtils.TruncateAt.END
             }
 
             var nameCount = directory.name

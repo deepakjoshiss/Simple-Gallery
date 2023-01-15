@@ -14,7 +14,7 @@
             android:id="@+id/directories_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/color_primary"
+            android:background="@android:color/transparent"
             app:title="@string/app_launcher_name"
             app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
 
@@ -81,6 +81,7 @@
                     android:layout_height="match_parent"
                     android:layoutAnimation="@anim/layout_animation"
                     android:scrollbars="none"
+                    android:paddingHorizontal="4dp"
                     app:layoutManager="com.simplemobiletools.commons.views.MyGridLayoutManager"
                     app:spanCount="@integer/directory_columns_vertical_scroll" />
 

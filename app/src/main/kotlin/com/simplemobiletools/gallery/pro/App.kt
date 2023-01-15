@@ -9,7 +9,18 @@ import okhttp3.Request
 import okhttp3.Response
 
 class App : Application() {
+
+
+    companion object Factory {
+        @JvmStatic lateinit var instance: App
+        @JvmStatic fun get(): App {
+            return instance;
+        }
+    }
+
     override fun onCreate() {
+        instance = this;
+
         super.onCreate()
         checkUseEnglish()
         Reprint.initialize(this)

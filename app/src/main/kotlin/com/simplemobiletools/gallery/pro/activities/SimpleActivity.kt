@@ -13,11 +13,12 @@ import com.simplemobiletools.commons.extensions.scanPathRecursively
 import com.simplemobiletools.commons.helpers.ensureBackgroundThread
 import com.simplemobiletools.commons.helpers.isPiePlus
 import com.simplemobiletools.gallery.pro.R
+import com.simplemobiletools.gallery.pro.aes.BaseActivityOverride
 import com.simplemobiletools.gallery.pro.extensions.addPathToDB
 import com.simplemobiletools.gallery.pro.extensions.config
 import com.simplemobiletools.gallery.pro.extensions.updateDirectoryPath
 
-open class SimpleActivity : BaseSimpleActivity() {
+open class SimpleActivity : BaseActivityOverride() {
     val observer = object : ContentObserver(null) {
         override fun onChange(selfChange: Boolean, uri: Uri?) {
             super.onChange(selfChange, uri)

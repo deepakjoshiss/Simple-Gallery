@@ -85,6 +85,11 @@
         android:title="@string/settings"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/donate"
+        android:icon="@drawable/ic_info_vector"
+        android:title="@string/donate"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/about"
         android:icon="@drawable/ic_info_vector"
         android:title="@string/about"

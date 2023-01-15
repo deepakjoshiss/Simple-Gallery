@@ -18,16 +18,14 @@ import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.TrackGroupArray
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray
-import com.google.android.exoplayer2.upstream.ContentDataSource
-import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.DataSpec
-import com.google.android.exoplayer2.upstream.FileDataSource
+import com.google.android.exoplayer2.trackselection.*
+import com.google.android.exoplayer2.upstream.*
 import com.simplemobiletools.commons.extensions.*
 import com.simplemobiletools.commons.helpers.ensureBackgroundThread
 import com.simplemobiletools.gallery.pro.R
 import com.simplemobiletools.gallery.pro.activities.PanoramaVideoActivity
 import com.simplemobiletools.gallery.pro.activities.VideoActivity
+import com.simplemobiletools.gallery.pro.aes.AESHelper
 import com.simplemobiletools.gallery.pro.extensions.config
 import com.simplemobiletools.gallery.pro.extensions.hasNavBar
 import com.simplemobiletools.gallery.pro.extensions.parseFileChannel
@@ -364,9 +362,17 @@ class VideoFragment : ViewPagerFragment(), TextureView.SurfaceTextureListener, S
             activity?.showErrorToast(e)
             return
         }
+        println(">>>>>>>>>>>>> this is in fragment")
 
-        val factory = DataSource.Factory { fileDataSource }
-        val audioSource = ExtractorMediaSource(fileDataSource.uri, factory, DefaultExtractorsFactory(), null, null)
+//        val factory = DataSource.Factory { fileDataSource }
+//        val audioSource = ExtractorMediaSource(fileDataSource.uri, factory, DefaultExtractorsFactory(), null, null)
+
+
+        val dataSourceFactory: DataSource.Factory = AESHelper.createDataSourceFactory(null)
+
+        val audioSource = ExtractorMediaSource(fileDataSource.uri, dataSourceFactory, DefaultExtractorsFactory(), null, null)
+
+
         mPlayOnPrepared = true
         mExoPlayer!!.audioStreamType = C.STREAM_TYPE_MUSIC
         mExoPlayer!!.prepare(audioSource)

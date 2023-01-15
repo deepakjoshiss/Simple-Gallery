@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="rounded_corner_radius_big">8dp</dimen>
+    <color name="aes_toolbar_color">#aa000000</color>
+
+</resources>
