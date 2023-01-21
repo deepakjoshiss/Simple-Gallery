@@ -45,6 +45,7 @@ import com.simplemobiletools.commons.models.FileDirItem
 import com.simplemobiletools.gallery.pro.BuildConfig
 import com.simplemobiletools.gallery.pro.R
 import com.simplemobiletools.gallery.pro.adapters.MyPagerAdapter
+import com.simplemobiletools.gallery.pro.aes.isVideoFastN
 import com.simplemobiletools.gallery.pro.asynctasks.GetMediaAsynctask
 import com.simplemobiletools.gallery.pro.dialogs.DeleteWithRememberDialog
 import com.simplemobiletools.gallery.pro.dialogs.ResizeWithPathDialog
@@ -440,7 +441,7 @@ class ViewPagerActivity : SimpleActivity(), ViewPager.OnPageChangeListener, View
 
     private fun getTypeFromPath(path: String): Int {
         return when {
-            path.isVideoFast() -> TYPE_VIDEOS
+            path.isVideoFastN() -> TYPE_VIDEOS
             path.isGif() -> TYPE_GIFS
             path.isSvg() -> TYPE_SVGS
             path.isRawFast() -> TYPE_RAWS

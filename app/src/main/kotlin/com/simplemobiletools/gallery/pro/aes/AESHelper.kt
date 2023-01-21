@@ -12,9 +12,7 @@ import com.google.android.exoplayer2.upstream.TransferListener
 import com.simplemobiletools.gallery.pro.aes.EncryptedFileDataSourceFactory
 import java.lang.Exception
 
-const val PASSWORD = "a7c2d599fb131290"
-const val AES_ALGORITHM = "AES"
-const val AES_TRANSFORMATION = "AES/CTR/NoPadding"
+
 
 object AESHelper {
     private val mFolderPath: String? = null
@@ -23,10 +21,11 @@ object AESHelper {
     private lateinit var mCipher: Cipher
 
     init {
-        val key = PASSWORD.toByteArray()
-        val iv = PASSWORD.toByteArray()
-        mSecretKeySpec = SecretKeySpec(key, AES_ALGORITHM)
-        mIvParameterSpec = IvParameterSpec(iv)
+        mIvParameterSpec = AESUtils.createDataIVSpec()
+    }
+
+    fun setToken(token: ByteArray) {
+        mSecretKeySpec = AESUtils.createDataKeySpec(token)
         try {
             mCipher = Cipher.getInstance(AES_TRANSFORMATION)
             mCipher.init(
@@ -41,6 +40,10 @@ object AESHelper {
 
     fun createDataSourceFactory(listener: TransferListener?): EncryptedFileDataSourceFactory {
         return EncryptedFileDataSourceFactory(mCipher, mSecretKeySpec, mIvParameterSpec, listener)
+    }
+
+    fun decryptText(arr: ByteArray): String {
+        return mCipher.doFinal(arr).decodeToString()
     }
 
     @get:Throws(

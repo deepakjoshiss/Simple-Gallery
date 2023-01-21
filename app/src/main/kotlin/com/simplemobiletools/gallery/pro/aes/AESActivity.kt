@@ -7,13 +7,24 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Parcelable
 import android.provider.MediaStore
+import android.util.Base64
+import android.view.MenuItem
+import android.view.View
+import android.view.View.OnClickListener
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.view.menu.MenuBuilder
 import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.simplemobiletools.commons.adapters.FilepickerItemsAdapter
+import com.simplemobiletools.commons.dialogs.FilePickerDialog
 import com.simplemobiletools.commons.extensions.*
 import com.simplemobiletools.commons.helpers.IS_FROM_GALLERY
 import com.simplemobiletools.commons.helpers.ensureBackgroundThread
@@ -22,15 +33,20 @@ import com.simplemobiletools.gallery.pro.R
 import com.simplemobiletools.gallery.pro.activities.MainActivity
 import com.simplemobiletools.gallery.pro.activities.SimpleActivity
 import com.simplemobiletools.gallery.pro.activities.ViewPagerActivity
+import com.simplemobiletools.gallery.pro.extensions.launchAbout
 import com.simplemobiletools.gallery.pro.helpers.*
 import kotlinx.android.synthetic.main.activity_aes.*
+import kotlinx.android.synthetic.main.password_layout.*
 import java.io.File
+import java.time.Clock
+import java.time.Instant
 
 private const val ENCRYPTED_FILE_NAME = "encrypted.mp4"
+private const val DEFAULT_PIN = "1111"
+private const val DEFAULT_PIN_LENGTH = 4
 
 class AESActivity : SimpleActivity() {
     private var mStartForResult: ActivityResultLauncher<Intent>? = null
-    private var mEncryptedFile: File? = null
     private var currPath: String = Environment.getExternalStorageDirectory().toString()
 
     val pickFile: Boolean = true
@@ -46,7 +62,174 @@ class AESActivity : SimpleActivity() {
     protected override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_aes)
+        updateToolbar()
+//        if(aesConfig.aesVault.isNotEmpty()) {
+//            val dec = AESUtils.decryptVault(Gson().fromJson(aesConfig.aesVault, AESVault::class.java), "4399")
+//            println(">>>> ${dec?.get(0)?.decodeToString()}, ${dec?.get(1)?.decodeToString()}")
+//        }
+        //       setUpPinView()
 
+        val dec = AESUtils.decryptVault(Gson().fromJson(aesConfig.aesVault, AESVault::class.java), "4399")
+        if (dec == null) {
+            println(">>>> wrong pass}")
+            launchAbout()
+            return
+        }
+        onVaultFound(dec[1].decodeToString(), dec[0])
+
+        mStartForResult = registerForActivityResult<Intent, ActivityResult>(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val path = result.data?.extras?.getString("path")
+                if (path != null) {
+                    println(">>>> File path is $path")
+                    startEncryption(path)
+                }
+
+
+            }
+        }
+    }
+
+    private fun updateToolbar() {
+
+        val item = toolbar.menu.add("Reset Values")
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
+        item.setOnMenuItemClickListener {
+            filepicker_holder.visibility = View.GONE
+            aesConfig.aesVault = ""
+            setUpPinView()
+            true
+        }
+
+        val add = toolbar.menu.add("Add Item")
+        add.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+        add.setIcon(R.drawable.ic_plus_vector)
+        add.setOnMenuItemClickListener {
+            val intent = Intent(this@AESActivity, MainActivity::class.java).apply {
+                action = Intent.ACTION_PICK
+                type = MediaStore.Video.Media.CONTENT_TYPE
+                putExtra(GET_VIDEO_INTENT, true)
+                putExtra(PICKED_PATHS, true)
+            }
+            mStartForResult?.launch(intent)
+            true
+        }
+    }
+
+    private fun onVaultFound(folderPath: String, token: ByteArray) {
+        println(">>>> vault is $folderPath ${token.decodeToString()} ${DATA_IV.encodeToByteArray().size}")
+        AESHelper.setToken(token)
+        currPath = folderPath
+        filepicker_holder.visibility = View.VISIBLE
+        container.removeAllViews()
+        tryUpdateItems()
+    }
+
+    private fun createPinCallback(view: ClassicLockView): PassCallback {
+        return object : PassCallback {
+            var startPin = true
+            var pinValue: String? = null
+            override fun onGoClick(text: String) {
+                val vaultData = if (aesConfig.aesVault.isEmpty()) null else Gson().fromJson(aesConfig.aesVault, AESVault::class.java)
+
+                if (vaultData == null) {
+                    if (startPin) {
+                        if (text == DEFAULT_PIN) {
+                            view.resetInput()
+                            view.setLabel("Please Enter Pin")
+                            startPin = false;
+                        } else {
+                            launchAbout()
+                        }
+                        return;
+                    }
+
+                    if (text.isEmpty() || text.length != DEFAULT_PIN_LENGTH) {
+                        toast("Pin should be $DEFAULT_PIN_LENGTH digits long")
+                        return
+                    }
+
+                    if (pinValue.isNullOrEmpty()) {
+                        pinValue = text
+                        view.resetInput()
+                        view.setLabel("Please Enter Pin Again")
+                        return
+                    }
+
+                    if (pinValue == text) {
+                        println(">>>>>> Pin matched $pinValue")
+                        setUpPassView(text)
+                        return
+                    }
+                    toast("Pin did not match")
+                    return
+                }
+
+                startPin = false;
+                val dec = AESUtils.decryptVault(vaultData, text)
+                if (dec == null) {
+                    println(">>>> wrong pass}")
+                    launchAbout()
+                    return
+                }
+                onVaultFound(dec[1].decodeToString(), dec[0])
+            }
+
+            override fun onTextChange(text: String) {
+                // ignore
+            }
+
+        }
+    }
+
+    private fun setUpPinView() {
+        container.removeAllViews();
+        val view: ClassicLockView = layoutInflater.inflate(R.layout.password_classic_bottom, container, false) as ClassicLockView;
+        view.setPassCallback(createPinCallback(view))
+        container.addView(view)
+    }
+
+    private fun setUpPassView(pin: String) {
+        container.removeAllViews();
+        val view = layoutInflater.inflate(R.layout.password_layout, container, true)
+        val passView = view.findViewById<TextInputLayout>(R.id.pass)
+        val conPassView = view.findViewById<TextInputLayout>(R.id.confirm_pass)
+        val folderPathText = view.findViewById<TextInputEditText>(R.id.folder_path)
+        var folderPath: String? = null
+        folderPathText.setOnClickListener { _ ->
+            FilePickerDialog(this@AESActivity, currPath, false, true) { path ->
+                println(">>>>> Picked Folder $path")
+                folderPathText.setText(path)
+                folderPath = path
+            }
+        }
+
+        view.findViewById<View>(R.id.confirm_button).setOnClickListener(object : OnClickListener {
+            override fun onClick(v: View?) {
+                if (folderPath.isNullOrEmpty()) {
+                    toast("Please select folder", Toast.LENGTH_SHORT)
+                    return;
+                }
+                if (conPassView.editText?.text.toString() != passView.editText?.text.toString()) {
+                    toast("Passwords do not match", Toast.LENGTH_SHORT)
+                    return;
+                }
+                val vault = AESUtils.encryptVault(passView.editText?.text.toString(), folderPath!!, pin)
+                if (vault != null) {
+                    println(">>>>> ${vault.pass} ${vault.vault}")
+                    val dec = AESUtils.decryptVault(vault, pin)
+                    println(">>>> ${dec?.get(0)?.decodeToString()}, ${dec?.get(1)?.decodeToString()}")
+                }
+                aesConfig.aesVault = Gson().toJson(vault)
+                setUpPinView()
+            }
+
+        })
+    }
+
+    private fun setUpFolderView() {
         if (!getDoesFilePathExist(currPath)) {
             currPath = internalStoragePath
         }
@@ -58,28 +241,6 @@ class AESActivity : SimpleActivity() {
         // do not allow copying files in the recycle bin manually
         if (currPath.startsWith(filesDir.absolutePath)) {
             currPath = internalStoragePath
-        }
-
-        mStartForResult =
-            registerForActivityResult<Intent, ActivityResult>(
-                ActivityResultContracts.StartActivityForResult()
-            ) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    println(">>>>>>>>>>>>>" + result.data!!.data)
-                    startEncryption(result.data!!.data)
-                }
-            }
-        mEncryptedFile = File(
-            Environment.getExternalStorageDirectory().toString() + "/Backdrops",
-            ENCRYPTED_FILE_NAME
-        )
-        encrypt.setOnClickListener {
-            val intent = Intent(this@AESActivity, MainActivity::class.java).apply {
-                action = Intent.ACTION_PICK
-                type = MediaStore.Video.Media.CONTENT_TYPE
-                putExtra(GET_VIDEO_INTENT, true)
-            }
-            mStartForResult?.launch(intent)
         }
 
         filepicker_placeholder.setTextColor(getProperTextColor())
@@ -259,9 +420,11 @@ class AESActivity : SimpleActivity() {
         //mDialog?.dismiss()
     }
 
-    private fun startEncryption(uri: Uri?) {
+    private fun startEncryption(filePath: String) {
+        val fromFile = File(filePath)
+        val encrypted = File(currPath, fromFile.name)
         try {
-            AESencryptionTask(this, uri, mEncryptedFile).execute()
+            AESencryptionTask(this, fromFile, encrypted).execute()
         } catch (e: Exception) {
             e.printStackTrace()
         }

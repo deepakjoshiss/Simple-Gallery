@@ -10,6 +10,7 @@ import android.os.Handler
 import android.provider.MediaStore
 import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
+import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.Toast
@@ -83,6 +84,7 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
     private var mStoredTextColor = 0
     private var mStoredPrimaryColor = 0
     private var mStoredStyleString = ""
+    private var mInternalIntent = false;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         isMaterialActivity = true
@@ -97,6 +99,7 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
             checkRecycleBinItems()
             startNewPhotoFetcher()
         }
+        mInternalIntent = referrer?.host == packageName
 
         mIsPickImageIntent = isPickImageIntent(intent)
         mIsPickVideoIntent = isPickVideoIntent(intent)
@@ -111,7 +114,7 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
         setupOptionsMenu()
         refreshMenuItems()
 
-        updateMaterialActivityViews(directories_coordinator, directories_grid, useTransparentNavigation = !config.scrollHorizontally, useTopSearchMenu = true)
+        updateMaterialActivityViews(directories_coordinator, directories_grid, useTransparentNavigation = false, useTopSearchMenu = true)
 
         directories_refresh_layout.setOnRefreshListener { getDirectories() }
         storeStateVariables()
@@ -157,6 +160,7 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
                 finish()
             }
         }
+
         if (!mIsPickImageIntent && !mIsPickVideoIntent) {
             Intent(this, AESActivity::class.java).apply {
                 startActivity(this)
@@ -194,7 +198,7 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
         mDateFormat = config.dateFormat
         mTimeFormat = getTimeFormat()
 
-    //    window.statusBarColor = resources.getColor(R.color.aes_toolbar_color)
+        window.statusBarColor = resources.getColor(R.color.md_grey_900)
 
         refreshMenuItems()
 
@@ -400,6 +404,10 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
     private fun updateMenuColors() {
         updateStatusbarColor(getProperBackgroundColor())
         main_menu.updateColors()
+        val searchBar = findViewById<View>(R.id.top_toolbar_holder)
+        main_menu.setBackgroundColor(getColor(R.color.md_grey_900))
+        findViewById<View>(R.id.top_app_bar_layout).setBackgroundColor(getColor(android.R.color.transparent))
+        searchBar.background?.applyColorFilter(getColor(R.color.md_grey_900_dark))
     }
 
     private fun getRecyclerAdapter() = directories_grid.adapter as? DirectoryAdapter
@@ -833,6 +841,10 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
                 if (resultUri != null) {
                     resultIntent.data = resultUri
                     resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                if(mInternalIntent) {
+                    resultIntent.putExtra("path", resultData.data.toString())
                 }
 
                 setResult(Activity.RESULT_OK, resultIntent)
