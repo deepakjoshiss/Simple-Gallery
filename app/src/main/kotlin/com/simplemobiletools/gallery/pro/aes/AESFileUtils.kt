@@ -6,10 +6,15 @@ import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.media.MediaMetadataRetriever.METADATA_KEY_DURATION
 import android.media.ThumbnailUtils
+import android.net.Uri
 import android.util.Base64
+import android.util.Log
 import java.io.*
 
 object AESFileUtils {
+    const val AES_VIDEO_EXT = ".sys"
+    const val AES_THUMB_EXT = ".dat"
+    const val AES_META_EXT = ".nfo"
 
     @Throws(FileNotFoundException::class)
     fun getOutputStream(file: File?, context: Context, z: Boolean): OutputStream? {
@@ -35,7 +40,29 @@ object AESFileUtils {
     fun getDuration(str: String): ByteArray {
         val mediaMetadataRetriever = MediaMetadataRetriever()
         mediaMetadataRetriever.setDataSource(str)
-        return mediaMetadataRetriever.extractMetadata(METADATA_KEY_DURATION)!!.toByteArray()
+        return mediaMetadataRetriever.extractMetadata(METADATA_KEY_DURATION)!!.encodeToByteArray()
+    }
+
+    fun decodeFileData(context: Context, file: File): ByteArray? {
+        try {
+            val inputStream: InputStream? = context.getContentResolver().openInputStream(Uri.fromFile(file))
+            if (inputStream != null) {
+                val outputStream = ByteArrayOutputStream()
+                //val aesInputStream = helper.getCipherInputStream(inputStream)
+                val buffer = ByteArray(256)
+                var bytesRead: Int
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    outputStream.write(buffer, 0, bytesRead)
+                }
+                inputStream.close()
+                //aesInputStream.close();
+                return outputStream.toByteArray()
+            }
+        } catch (e: Exception) {
+            println(">>> file decode error ${file.absolutePath}")
+            e.printStackTrace()
+        }
+        return null
     }
 
     fun writeByteArrayToFile(context: Context, file: File?, bArr: ByteArray?) {

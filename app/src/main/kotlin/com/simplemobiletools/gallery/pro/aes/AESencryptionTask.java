@@ -65,13 +65,17 @@ public class AESencryptionTask extends AsyncTask<Void, Void, Void> {
 //        connection.disconnect();
     }
 
-    private void createFileMeta() {
-        String fromPath = mFrom.getAbsolutePath();
-        String toPath = mTo.getAbsolutePath();
-        byte[] thumb = fileUtils.getThumbnail(fromPath);
-        byte[] dur = fileUtils.getDuration(fromPath);
-        fileUtils.writeByteArrayToFile(mContext, new File(toPath + ".jpg"), thumb);
-        fileUtils.writeByteArrayToFile(mContext, new File(toPath + ".txt"), dur);
+    private void createFileMeta(String fileParentPath, String nameWE) {
+        try {
+            String fromPath = mFrom.getAbsolutePath();
+            byte[] thumb = mCipher.doFinal(fileUtils.getThumbnail(fromPath));
+            byte[] dur = mCipher.doFinal(fileUtils.getDuration(fromPath));
+            fileUtils.writeByteArrayToFile(mContext, new File(fileParentPath, nameWE.concat(AESFileUtils.AES_THUMB_EXT)), thumb);
+            fileUtils.writeByteArrayToFile(mContext, new File(fileParentPath, nameWE.concat(AESFileUtils.AES_META_EXT)), dur);
+        } catch (Exception e) {
+            System.out.println(">>>> create meta error " + fileParentPath + " " + nameWE);
+            e.printStackTrace();
+        }
     }
 
     private void encryptFile() throws Exception {
@@ -79,9 +83,10 @@ public class AESencryptionTask extends AsyncTask<Void, Void, Void> {
         String b64 = fileUtils.encodeBase64Name(encName);
         byte[] dec = fileUtils.decodeBase64Name(b64);
         System.out.println(">>>> file " + dec.length + "  " + b64.length() + "  " + AESHelper.INSTANCE.decryptText(dec));
-
+        File toFile = new File(mTo.getParent(), b64.concat(AESFileUtils.AES_VIDEO_EXT));
+        createFileMeta(mTo.getParent(), b64);
         InputStream inputStream = mContext.getContentResolver().openInputStream(Uri.fromFile(mFrom));
-        FileOutputStream fileOutputStream = new FileOutputStream(new File(mTo.getParent(), b64 + ".sys"));
+        FileOutputStream fileOutputStream = new FileOutputStream(toFile);
         CipherOutputStream cipherOutputStream = new CipherOutputStream(fileOutputStream, mCipher);
         byte[] buffer = new byte[1024 * 1024];
         int bytesRead;
@@ -98,7 +103,6 @@ public class AESencryptionTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... params) {
         try {
             mCipher = AESHelper.INSTANCE.getEncryptionCypher();
-            createFileMeta();
             encryptFile();
         } catch (Exception e) {
             e.printStackTrace();

@@ -10,6 +10,8 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
+const val PRINT_TAG = ">>>>"
+
 const val PASS_KEY_TYPE = "PBKDF2WithHmacSHA1"
 const val PASS_KEY_LENGTH = 256
 const val PASS_KEY_ITER = 48
@@ -24,6 +26,12 @@ data class AESText(var salt: ByteArray, var iv: ByteArray, var data: ByteArray)
 data class AESVault(var salt: ByteArray, var iv: ByteArray, var pass: ByteArray, var vault: ByteArray)
 
 data class AESCipher(var salt: ByteArray, var iv: ByteArray, var cipher: Cipher)
+
+data class AESImageModel(var path: String)
+
+fun linePrint(msg: String) {
+    Log.d(PRINT_TAG, msg)
+}
 
 object AESUtils {
 
