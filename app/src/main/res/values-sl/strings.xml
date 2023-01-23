@@ -99,6 +99,9 @@
     <string name="rotate_left">Zavrti levo</string>
     <string name="rotate_right">Zavrti desno</string>
     <string name="rotate_one_eighty">Zavrti za 180º</string>
+    <string name="transform">Transform</string>
+    <string name="crop">Crop</string>
+    <string name="draw">Draw</string>
     <string name="flip">Zrcaljenje</string>
     <string name="flip_horizontally">Zrcali horizontalno</string>
     <string name="flip_vertically">Zrcali vertikalno</string>
@@ -205,7 +208,7 @@
     <string name="square">Kvadrat</string>
     <string name="rounded_corners">Zaobljeni vogali</string>
     <string name="export_favorite_paths">Izvozi priljubljene poti datotek</string>
-    <string name="import_favorite_paths">Import favorite file paths</string>
+    <string name="import_favorite_paths">Import favorites</string>
     <string name="paths_imported_successfully">Paths imported successfully</string>
     <string name="media_management_prompt">To make sure that all file operations work reliably, please make this app a Media management app in your device settings.</string>
     <string name="password_protect_excluded">Zaščita vidnosti izključenih map z geslom</string>

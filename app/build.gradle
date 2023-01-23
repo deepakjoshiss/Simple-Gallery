@@ -16,8 +16,8 @@ android {
         applicationId "com.simplemobiletools.gallery.pro"
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 382
-        versionName "6.26.1"
+        versionCode 384
+        versionName "6.26.3"
         setProperty("archivesBaseName", "gallery-$versionCode")
         vectorDrawables.useSupportLibrary = true
     }
@@ -78,7 +78,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.SimpleMobileTools:Simple-Commons:449b24c6a4'
+    implementation 'com.github.SimpleMobileTools:Simple-Commons:9428140d75'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
     implementation 'it.sephiroth.android.exif:library:1.0.1'
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.24'
@@ -90,7 +90,7 @@ dependencies {
     implementation 'info.androidhive:imagefilters:1.0.7'
     implementation 'com.caverock:androidsvg-aar:1.4'
     implementation 'com.github.tibbi:gestureviews:a8e8fa8d27'
-    implementation 'com.github.tibbi:subsampling-scale-image-view:b51482b3fa'
+    implementation 'com.github.tibbi:subsampling-scale-image-view:d0681c32e2'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'com.github.penfeizhou.android.animation:awebp:2.17.0'
     implementation 'com.github.penfeizhou.android.animation:apng:2.17.0'

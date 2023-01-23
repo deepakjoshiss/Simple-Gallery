@@ -99,6 +99,9 @@
     <string name="rotate_left">Gira a l\'esquerra</string>
     <string name="rotate_right">Gira a la dreta</string>
     <string name="rotate_one_eighty">Gira 180º</string>
+    <string name="transform">Transforma</string>
+    <string name="crop">Escapça</string>
+    <string name="draw">Dibuixa</string>
     <string name="flip">Inverteix</string>
     <string name="flip_horizontally">Inverteix horitzontalment</string>
     <string name="flip_vertically">Inverteix verticalment</string>
@@ -204,8 +207,8 @@
     <string name="limit_folder_title">Limita els títols llargs de carpeta a 1 línia</string>
     <string name="square">Quadrat</string>
     <string name="rounded_corners">Cantonades arrodonides</string>
-    <string name="export_favorite_paths">Exporta els camins dels fitxers preferits</string>
-    <string name="import_favorite_paths">Importa els camins de fitxers preferits</string>
+    <string name="export_favorite_paths">Exporta els preferits</string>
+    <string name="import_favorite_paths">Importa els preferits</string>
     <string name="paths_imported_successfully">Els camins s\'han importat correctament</string>
     <string name="media_management_prompt">Per assegurar que totes les operacions de fitxers funcionin de manera fiable, feu que aquesta aplicació sigui una aplicació de gestió multimèdia a la configuració del dispositiu.</string>
     <string name="password_protect_excluded">Protegeix amb contrasenya la visibilitat de les carpetes excloses</string>

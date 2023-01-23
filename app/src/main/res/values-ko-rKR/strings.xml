@@ -99,6 +99,9 @@
     <string name="rotate_left">왼쪽으로 회전</string>
     <string name="rotate_right">오른쪽으로 회전</string>
     <string name="rotate_one_eighty">180도 회전</string>
+    <string name="transform">Transform</string>
+    <string name="crop">Crop</string>
+    <string name="draw">Draw</string>
     <string name="flip">뒤집기</string>
     <string name="flip_horizontally">가로 뒤집기</string>
     <string name="flip_vertically">세로 뒤집기</string>
@@ -204,8 +207,8 @@
     <string name="limit_folder_title">Limit long folder titles to 1 line</string>
     <string name="square">Square</string>
     <string name="rounded_corners">Rounded corners</string>
-    <string name="export_favorite_paths">Export favorite file paths</string>
-    <string name="import_favorite_paths">Import favorite file paths</string>
+    <string name="export_favorite_paths">Export favorites</string>
+    <string name="import_favorite_paths">Import favorites</string>
     <string name="paths_imported_successfully">Paths imported successfully</string>
     <string name="media_management_prompt">To make sure that all file operations work reliably, please make this app a Media management app in your device settings.</string>
     <string name="password_protect_excluded">제외된 폴더 표시 여부를 암호로 보호합니다</string>

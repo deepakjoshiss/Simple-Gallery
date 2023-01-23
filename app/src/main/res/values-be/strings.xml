@@ -119,6 +119,9 @@
     <string name="rotate_left">Павярнуць улева</string>
     <string name="rotate_right">Павярнуць управа</string>
     <string name="rotate_one_eighty">Павярнуць на 180°</string>
+    <string name="transform">Transform</string>
+    <string name="crop">Crop</string>
+    <string name="draw">Draw</string>
     <string name="flip">Адлюстраваць</string>
     <string name="flip_horizontally">Адлюстраваць гарызантальна</string>
     <string name="wallpaper_set_successfully">Шпалеры ўсталяваны паспяхова</string>
@@ -212,7 +215,7 @@
     <string name="square">квадратны</string>
     <string name="rounded_corners">Скругленыя куты</string>
     <string name="export_favorite_paths">Экспарт любімых шляхоў да файлаў</string>
-    <string name="import_favorite_paths">Import favorite file paths</string>
+    <string name="import_favorite_paths">Import favorites</string>
     <string name="paths_imported_successfully">Paths imported successfully</string>
     <string name="media_management_prompt">Каб пераканацца, што ўсе аперацыі з файламі працуюць надзейна, зрабіце гэта дадатак праграмай для кіравання мультымедыя ў наладах прылады.</string>
     <string name="password_protect_excluded">Бачнасць выключанай папкі абараніць паролем</string>

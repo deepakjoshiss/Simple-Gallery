@@ -15,7 +15,7 @@
     <string name="other_folder">Diğer klasör</string>
     <string name="show_on_map">Haritada göster</string>
     <string name="unknown_location">Bilinmeyen konum</string>
-    <string name="volume">Ses</string>
+    <string name="volume">Ses seviyesi</string>
     <string name="brightness">Parlaklık</string>
     <string name="lock_orientation">Yönü kilitle</string>
     <string name="unlock_orientation">Yönün kilidini aç</string>
@@ -99,6 +99,9 @@
     <string name="rotate_left">Sola döndür</string>
     <string name="rotate_right">Sağa döndür</string>
     <string name="rotate_one_eighty">180º döndür</string>
+    <string name="transform">Dönüştür</string>
+    <string name="crop">Kırp</string>
+    <string name="draw">Çiz</string>
     <string name="flip">Çevir</string>
     <string name="flip_horizontally">Yatay olarak çevir</string>
     <string name="flip_vertically">Dikey olarak çevir</string>
@@ -204,8 +207,8 @@
     <string name="limit_folder_title">Uzun klasör başlıklarını 1 satırla sınırla</string>
     <string name="square">Kare</string>
     <string name="rounded_corners">Yuvarlatılmış köşeler</string>
-    <string name="export_favorite_paths">Favori dosya yollarını dışa aktar</string>
-    <string name="import_favorite_paths">Sık kullanılan dosya yollarını içe aktar</string>
+    <string name="export_favorite_paths">Favorileri dışa aktar</string>
+    <string name="import_favorite_paths">Favorileri içe aktar</string>
     <string name="paths_imported_successfully">Yollar başarıyla içe aktarıldı</string>
     <string name="media_management_prompt">Tüm dosya işlemlerinin güvenilir bir şekilde çalıştığından emin olmak için lütfen bu uygulamayı aygıt ayarlarınızda bir medya yönetimi uygulaması yapın.</string>
     <string name="password_protect_excluded">Hariç tutulan klasör görünürlüğünü parola ile koru</string>

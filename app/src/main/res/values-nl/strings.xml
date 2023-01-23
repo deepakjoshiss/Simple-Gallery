@@ -95,6 +95,9 @@
     <string name="rotate_left">Linksom draaien</string>
     <string name="rotate_right">Rechtsom draaien</string>
     <string name="rotate_one_eighty">180º draaien</string>
+    <string name="transform">Vervormen</string>
+    <string name="crop">Bijsnijden</string>
+    <string name="draw">Tekenen</string>
     <string name="flip">Omdraaien</string>
     <string name="flip_horizontally">Horizontaal spiegelen</string>
     <string name="flip_vertically">Verticaal spiegelen</string>
@@ -200,8 +203,8 @@
     <string name="limit_folder_title">Lange mapnamen tot 1 regel beperken</string>
     <string name="square">Vierkant</string>
     <string name="rounded_corners">Afgeronde hoeken</string>
-    <string name="export_favorite_paths">Locaties favorieten exporteren</string>
-    <string name="import_favorite_paths">Locaties favorieten importeren</string>
+    <string name="export_favorite_paths">Favorieten exporteren</string>
+    <string name="import_favorite_paths">Favorieten importeren</string>
     <string name="paths_imported_successfully">Locaties zijn geïmporteerd</string>
     <string name="media_management_prompt">Maak van deze app in de systeeminstellingen een mediabeheer-app om er zeker van te zijn dat alle bestandsoperaties betrouwbaar werken.</string>
     <string name="password_protect_excluded">Zichtbaarheid van uitgesloten mappen met wachtwoord beveiligen</string>

@@ -99,6 +99,9 @@
     <string name="rotate_left">Kierrä vasemmalle</string>
     <string name="rotate_right">Kierrä oikealle</string>
     <string name="rotate_one_eighty">Kierrä 180º</string>
+    <string name="transform">Transform</string>
+    <string name="crop">Crop</string>
+    <string name="draw">Draw</string>
     <string name="flip">Käännä</string>
     <string name="flip_horizontally">Käännä vaakasuoraan</string>
     <string name="flip_vertically">Käännä pystysuoraan</string>
@@ -205,7 +208,7 @@
     <string name="square">Neliö</string>
     <string name="rounded_corners">Pyöristetyt kulmat</string>
     <string name="export_favorite_paths">Vie suosikkitiedostojen polut</string>
-    <string name="import_favorite_paths">Import favorite file paths</string>
+    <string name="import_favorite_paths">Import favorites</string>
     <string name="paths_imported_successfully">Paths imported successfully</string>
     <string name="media_management_prompt">Varmistaaksesi, että kaikki tiedostotoiminnot toimivat luotettavasti, tee tästä sovelluksesta medianhallintasovellus laitteen asetuksissa.</string>
     <string name="password_protect_excluded">Suojaa salasanalla pois suljettujen kansioiden näkyvyys</string>

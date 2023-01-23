@@ -61,7 +61,7 @@
     <string name="hidden_folders">Dossiers cachés</string>
     <string name="manage_hidden_folders">Gérer les dossiers cachés</string>
     <string name="hidden_folders_placeholder">Il semblerait que vous n\'ayez pas de dossier caché par un fichier .nomedia.</string>
-    <string name="hidden_all_files">You have to grant the app All Files access to see hidden files, else it cannot work.</string>
+    <string name="hidden_all_files">Vous devez accorder à l\'application l\'accès à tous les fichiers pour voir les fichiers cachés, sinon elle ne peut pas fonctionner.</string>
     <!-- Include folders -->
     <string name="include_folders">Dossiers ajoutés</string>
     <string name="manage_included_folders">Gérer les dossiers ajoutés</string>
@@ -78,7 +78,7 @@
     <string name="invalid_values">Veuillez entrer une résolution valide</string>
     <!-- Editor -->
     <string name="editor">Éditeur</string>
-    <string name="basic_editor">Éditeur de base</string>
+    <string name="basic_editor">Éditeur simple</string>
     <string name="advanced_editor">Éditeur avancé</string>
     <string name="rotate">Pivoter</string>
     <string name="invalid_image_path">Emplacement d\'image invalide</string>
@@ -99,6 +99,9 @@
     <string name="rotate_left">Pivoter à gauche</string>
     <string name="rotate_right">Pivoter à droite</string>
     <string name="rotate_one_eighty">Pivoter à 180º</string>
+    <string name="transform">Transformer</string>
+    <string name="crop">Rogner</string>
+    <string name="draw">Dessiner</string>
     <string name="flip">Retourner</string>
     <string name="flip_horizontally">Retourner horizontalement</string>
     <string name="flip_vertically">Retourner verticalement</string>
@@ -204,9 +207,9 @@
     <string name="limit_folder_title">Limiter à une ligne les noms de fichiers</string>
     <string name="square">Carré</string>
     <string name="rounded_corners">Arrondi</string>
-    <string name="export_favorite_paths">Exporter les emplacements favoris</string>
-    <string name="import_favorite_paths">Importer les emplacements favoris</string>
-    <string name="paths_imported_successfully">Emplacements favoris importés</string>
+    <string name="export_favorite_paths">Exporter les favoris</string>
+    <string name="import_favorite_paths">Importer les favoris</string>
+    <string name="paths_imported_successfully">Favoris importés</string>
     <string name="media_management_prompt">Pour vous assurer que toutes les opérations de fichiers fonctionnent de manière fiable, veuillez faire de cette application l\'application de gestion des médias dans les paramètres de votre appareil.</string>
     <string name="password_protect_excluded">Protection par mot de passe de la visibilité des dossiers exclus</string>
     <string name="media_management_manual">Quelque chose s\'est mal passé, veuillez aller dans les paramètres de votre appareil - Applis - Accès aux applications spéciales - Applis de gestion des médias et autorisez cette application à gérer les médias.</string>
