@@ -57,6 +57,7 @@ object AESHelper {
         return EncryptedFileDataSourceFactory(mDataCipher, mSecretKeySpec, mIvParameterSpec, listener)
     }
 
+
     fun decryptText(arr: ByteArray): String {
         return mCipher.doFinal(arr).decodeToString()
     }
@@ -65,14 +66,43 @@ object AESHelper {
         return mCipher.doFinal(arr)
     }
 
+    fun decryptAlbumData(fileData: AESDirItem): AESDirItem {
+        try {
+            fileData.displayName = mCipher.doFinal(AESFileUtils.decodeBase64Name(fileData.encodedName)).decodeToString()
+        } catch (e: Exception) {
+            println(">>>> error in decrypt Album data ${fileData.path}")
+            e.printStackTrace()
+        }
+
+        println(">>>> got album info ${fileData.displayName}")
+        return fileData
+    }
+
+    fun decryptImageFileData(context: Context, fileData: AESDirItem): AESDirItem {
+        try {
+            val fileName = mCipher.doFinal(AESFileUtils.decodeBase64Name(fileData.encodedName)).decodeToString()
+            fileData.displayName = fileName
+
+        } catch (e: Exception) {
+            println(">>>> error in decrypt image file data ${fileData.path}")
+            e.printStackTrace()
+        }
+
+        println(">>>> got file info ${fileData.displayName}, ${fileData.duration}")
+        return fileData
+    }
+
     fun decryptVideoFileData(context: Context, fileData: AESDirItem): AESDirItem {
         try {
             val fileName = mCipher.doFinal(AESFileUtils.decodeBase64Name(fileData.encodedName)).decodeToString()
             fileData.displayName = fileName
-            val durData = AESFileUtils.decodeFileData(context, fileData.mInfoFile)
-            if (durData != null) {
-                fileData.duration = mCipher.doFinal(durData).decodeToString().toLong()
+            fileData.mInfoFile?.let {
+                val durData = AESFileUtils.decodeFileData(context, it)
+                if (durData != null) {
+                    fileData.duration = mCipher.doFinal(durData).decodeToString().toLong()
+                }
             }
+
         } catch (e: Exception) {
             println(">>>> error in decrypt video file data ${fileData.path}")
             e.printStackTrace()

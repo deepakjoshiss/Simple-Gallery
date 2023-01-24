@@ -48,6 +48,8 @@ import com.simplemobiletools.gallery.pro.activities.PhotoActivity
 import com.simplemobiletools.gallery.pro.activities.PhotoVideoActivity
 import com.simplemobiletools.gallery.pro.activities.ViewPagerActivity
 import com.simplemobiletools.gallery.pro.adapters.PortraitPhotosAdapter
+import com.simplemobiletools.gallery.pro.aes.AESFileUtils
+import com.simplemobiletools.gallery.pro.aes.AESImageModel
 import com.simplemobiletools.gallery.pro.extensions.config
 import com.simplemobiletools.gallery.pro.extensions.saveRotatedImageToFile
 import com.simplemobiletools.gallery.pro.extensions.sendFakeClick
@@ -441,12 +443,13 @@ class PhotoFragment : ViewPagerFragment() {
     }
 
     private fun loadWithGlide(path: String, addZoomableView: Boolean) {
+        val isAES = path.endsWith(AESFileUtils.AES_IMAGE_EXT)
         val priority = if (mIsFragmentVisible) Priority.IMMEDIATE else Priority.NORMAL
         val options = RequestOptions()
             .signature(mMedium.getKey())
             .format(DecodeFormat.PREFER_ARGB_8888)
             .priority(priority)
-            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+            .diskCacheStrategy(if (isAES) DiskCacheStrategy.NONE else DiskCacheStrategy.RESOURCE)
             .fitCenter()
 
         if (mCurrentRotationDegrees != 0) {
@@ -455,7 +458,7 @@ class PhotoFragment : ViewPagerFragment() {
         }
 
         Glide.with(requireContext())
-            .load(path)
+            .load(if (isAES) AESImageModel(path) else path)
             .apply(options)
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {

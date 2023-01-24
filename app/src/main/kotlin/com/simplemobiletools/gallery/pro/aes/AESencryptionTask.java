@@ -68,7 +68,7 @@ public class AESencryptionTask extends AsyncTask<Void, Void, Void> {
     private void createFileMeta(String fileParentPath, String nameWE) {
         try {
             String fromPath = mFrom.getAbsolutePath();
-            byte[] thumb = mCipher.doFinal(fileUtils.getThumbnail(fromPath));
+            byte[] thumb = mCipher.doFinal(fileUtils.getVideoThumbnail(fromPath));
             byte[] dur = mCipher.doFinal(fileUtils.getDuration(fromPath));
             fileUtils.writeByteArrayToFile(mContext, new File(fileParentPath, nameWE.concat(AESFileUtils.AES_THUMB_EXT)), thumb);
             fileUtils.writeByteArrayToFile(mContext, new File(fileParentPath, nameWE.concat(AESFileUtils.AES_META_EXT)), dur);

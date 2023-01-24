@@ -21,6 +21,12 @@ const val PASS_KEY_TRANSFORM = "AES/CBC/PKCS7Padding"
 const val DATA_IV = "a7c2d599fb131290"
 const val AES_TRANSFORMATION = "AES/CTR/NoPadding"
 
+enum class AESFileTypes(val type: String) {
+    Album("album"),
+    Image("image"),
+    Video("video")
+}
+
 data class AESText(var salt: ByteArray, var iv: ByteArray, var data: ByteArray)
 
 data class AESVault(var salt: ByteArray, var iv: ByteArray, var pass: ByteArray, var vault: ByteArray)

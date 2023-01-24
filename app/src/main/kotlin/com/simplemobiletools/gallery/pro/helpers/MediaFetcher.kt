@@ -14,6 +14,7 @@ import android.text.format.DateFormat
 import com.simplemobiletools.commons.extensions.*
 import com.simplemobiletools.commons.helpers.*
 import com.simplemobiletools.gallery.pro.R
+import com.simplemobiletools.gallery.pro.aes.isImageFastN
 import com.simplemobiletools.gallery.pro.aes.isVideoFastN
 import com.simplemobiletools.gallery.pro.extensions.*
 import com.simplemobiletools.gallery.pro.models.Medium
@@ -319,7 +320,7 @@ class MediaFetcher(val context: Context) {
 
             var path = file.absolutePath
             var isPortrait = false
-            val isImage = path.isImageFast()
+            val isImage = path.isImageFastN()
             val isVideo = if (isImage) false else path.isVideoFastN()
             val isGif = if (isImage || isVideo) false else path.isGif()
             val isRaw = if (isImage || isVideo || isGif) false else path.isRawFast()
@@ -468,7 +469,7 @@ class MediaFetcher(val context: Context) {
                 }
 
                 val isPortrait = false
-                val isImage = path.isImageFast()
+                val isImage = path.isImageFastN()
                 val isVideo = if (isImage) false else path.isVideoFastN()
                 val isGif = if (isImage || isVideo) false else path.isGif()
                 val isRaw = if (isImage || isVideo || isGif) false else path.isRawFast()
@@ -555,7 +556,7 @@ class MediaFetcher(val context: Context) {
             }
 
             val filename = file.name ?: continue
-            val isImage = filename.isImageFast()
+            val isImage = filename.isImageFastN()
             val isVideo = if (isImage) false else filename.isVideoFastN()
             val isGif = if (isImage || isVideo) false else filename.isGif()
             val isRaw = if (isImage || isVideo || isGif) false else filename.isRawFast()

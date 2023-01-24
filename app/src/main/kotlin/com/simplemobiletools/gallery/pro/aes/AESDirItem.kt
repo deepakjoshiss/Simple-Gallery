@@ -14,9 +14,9 @@ class AESDirItem(
 ) :
     FileDirItem(path, name, isDirectory, children, size, modified, mediaStoreId) {
     var mThumbFile: File? = null
-    lateinit var mInfoFile: File
-    lateinit var encodedName: String
-    lateinit var displayName: String
+    var mInfoFile: File? = null
+    var encodedName: String = name
+    var displayName: String = ""
     var duration: Long = 0L
 
     init {

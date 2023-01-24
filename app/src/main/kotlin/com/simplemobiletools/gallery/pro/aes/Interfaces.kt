@@ -1,8 +1,8 @@
 package com.simplemobiletools.gallery.pro.aes
 
-interface PassCallback {
-    fun onGoClick(text: String)
-    fun onTextChange(text: String)
+interface TextSubmitCallback {
+    fun onSubmit(text: String, meta: String ?= "")
+    fun onTextChange(text: String, meta: String ?= "")
 }
 
 interface ProgressCallback {

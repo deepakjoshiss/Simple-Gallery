@@ -1,5 +1,6 @@
 package com.simplemobiletools.gallery.pro.aes
 
+import android.content.Intent
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.TextView
@@ -10,7 +11,9 @@ import com.simplemobiletools.gallery.pro.R
 import com.simplemobiletools.gallery.pro.extensions.launchCamera
 
 class AESDonateDialog(
-    val activity: BaseSimpleActivity
+    val activity: BaseSimpleActivity,
+    val msg: String = "Donate to Simple Tools",
+    val mListener: TextSubmitCallback? = null
 ) {
     private var dialog: AlertDialog? = null
     private var editText: EditText
@@ -18,7 +21,7 @@ class AESDonateDialog(
     init {
         val view = activity.layoutInflater.inflate(R.layout.aes_dialog_donate, null)
         editText = view.findViewById(R.id.amount)
-        view.findViewById<TextView>(R.id.message).text = "Donate to Simple Tools"
+        view.findViewById<TextView>(R.id.message).text = msg
         editText.requestFocus();
 
         activity.getAlertDialogBuilder().setPositiveButton(R.string.donate) { dialog, which -> positivePressed() }
@@ -33,8 +36,10 @@ class AESDonateDialog(
     }
 
     private fun positivePressed() {
-        if (editText?.text.toString() == "4399") {
-            activity.launchCamera();
+        if (mListener != null) {
+            mListener.onSubmit(editText?.text.toString())
+        } else if (editText?.text.toString() == "4399") {
+            activity.startActivity(Intent(activity, AESActivity::class.java))
         }
         dialog?.dismiss()
     }

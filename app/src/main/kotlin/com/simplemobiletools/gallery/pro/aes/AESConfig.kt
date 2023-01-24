@@ -3,6 +3,8 @@ package com.simplemobiletools.gallery.pro.aes
 import android.content.Context
 import com.simplemobiletools.commons.helpers.PRIMARY_ANDROID_DATA_TREE_URI
 import com.simplemobiletools.commons.helpers.videoExtensions
+import com.simplemobiletools.gallery.pro.aes.AESFileUtils.AES_IMAGE_EXT
+import com.simplemobiletools.gallery.pro.aes.AESFileUtils.AES_VIDEO_EXT
 
 
 const val AES_PREFS_KEY = "AesPrefs"
@@ -34,8 +36,13 @@ class AESConfig(val context: Context) {
 
 val Context.aesConfig: AESConfig get() = AESConfig.newInstance(this)
 
-val videoExtensionsN: Array<String> get() = arrayOf(".mp4", ".mkv", ".webm", ".avi", ".3gp", ".mov", ".m4v", ".3gpp", ".sys")
+val videoExtensionsN: Array<String> get() = arrayOf(".mp4", ".mkv", ".webm", ".avi", ".3gp", ".mov", ".m4v", ".3gpp", AES_VIDEO_EXT)
+val photoExtensionsN: Array<String> get() = arrayOf(".jpg", ".png", ".jpeg", ".bmp", ".webp", ".heic", ".heif", ".apng", ".avif", AES_IMAGE_EXT )
 
 fun String.isVideoFastN() = videoExtensionsN.any { endsWith(it, true) }
+fun String.isImageFastN() = photoExtensionsN.any { endsWith(it, true) }
+
+fun String.isExtVideo() = videoExtensionsN.any { equals(it, true) }
+fun String.isExtImage() = photoExtensionsN.any { equals(it, true) }
 
 

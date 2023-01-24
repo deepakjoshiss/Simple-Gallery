@@ -3,7 +3,6 @@ package com.simplemobiletools.gallery.pro.aes;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
@@ -15,7 +14,6 @@ import android.widget.TextView;
 import com.simplemobiletools.gallery.pro.R;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 /* loaded from: classes.dex */
 public class ClassicLockView extends LinearLayout implements View.OnClickListener, TextWatcher {
@@ -52,7 +50,7 @@ public class ClassicLockView extends LinearLayout implements View.OnClickListene
     public ImageView mGo;
     private TextView mLabel;
 
-    private PassCallback mPassCallback;
+    private TextSubmitCallback mPassCallback;
 
     @Override // android.text.TextWatcher
     public void afterTextChanged(Editable editable) {
@@ -219,7 +217,7 @@ public class ClassicLockView extends LinearLayout implements View.OnClickListene
                 this.mEPass.setSelection(this.mInput.length());
                 return;
             case R.id.buttonOK:
-                this.mPassCallback.onGoClick(this.mEPass.getText().toString());
+                this.mPassCallback.onSubmit(this.mEPass.getText().toString(), "");
                 return;
             default:
                 return;
@@ -228,7 +226,7 @@ public class ClassicLockView extends LinearLayout implements View.OnClickListene
 
     @Override // android.text.TextWatcher
     public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-        this.mPassCallback.onTextChange(this.mEPass.getText().toString());
+        this.mPassCallback.onTextChange(this.mEPass.getText().toString(), "");
     }
 
     public final void resetInput() {
@@ -236,7 +234,7 @@ public class ClassicLockView extends LinearLayout implements View.OnClickListene
         this.mInput = "";
     }
 
-    public void setPassCallback(PassCallback callback) {
+    public void setPassCallback(TextSubmitCallback callback) {
         this.mPassCallback = callback;
     }
 

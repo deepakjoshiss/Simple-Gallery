@@ -34,14 +34,12 @@ class AESFileAdapter(
     private lateinit var folderDrawable: Drawable
     private var fileDrawables = HashMap<String, Drawable>()
     private val hasOTGConnected = activity.hasOTGConnected()
-    private var fontSize = 0f
     private val cornerRadius = resources.getDimension(R.dimen.rounded_corner_radius_small).toInt()
     private val dateFormat = activity.baseConfig.dateFormat
     private val timeFormat = activity.getTimeFormat()
 
     init {
         initDrawables()
-        fontSize = activity.getTextSize()
     }
 
     override fun getActionMenuId() = 0
@@ -83,18 +81,19 @@ class AESFileAdapter(
 
     private fun setupView(view: View, fileDirItem: AESDirItem) {
         view.apply {
+            list_item_display_name.text = fileDirItem.displayName.ifEmpty { fileDirItem.name }
+            list_item_display_name.setTextColor(textColor)
+
             list_item_name.text = fileDirItem.name
             list_item_name.setTextColor(textColor)
-            list_item_name.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
 
             list_item_details.setTextColor(textColor)
-            list_item_details.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
 
             if (fileDirItem.isDirectory) {
                 list_item_icon.setImageDrawable(folderDrawable)
                 list_item_details.text = getChildrenCnt(fileDirItem)
             } else {
-                list_item_details.text = fileDirItem.size.formatSize() + " " + (fileDirItem.duration / 1000).toInt().getFormattedDuration()
+                list_item_details.text = "${(fileDirItem.duration / 1000).toInt().getFormattedDuration()} - ${fileDirItem.size.formatSize()}"
                 val path = fileDirItem.path
                 val placeholder = fileDrawables.getOrElse(fileDirItem.name.substringAfterLast(".").toLowerCase(Locale.getDefault()), { fileDrawable })
                 val options = RequestOptions()
