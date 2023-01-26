@@ -3,11 +3,16 @@ package com.simplemobiletools.gallery.pro.aes
 import com.simplemobiletools.commons.adapters.MyRecyclerViewAdapter
 
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
+import android.graphics.ColorFilter
 import android.graphics.drawable.Drawable
 import android.util.TypedValue
 import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.core.widget.ImageViewCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -26,43 +31,53 @@ import java.util.*
 import kotlin.time.toDuration
 
 class AESFileAdapter(
-    activity: BaseSimpleActivity, val fileDirItems: List<AESDirItem>, recyclerView: MyRecyclerView,
+    val activityN: AESActivity, val fileDirItems: List<AESDirItem>, recyclerView: MyRecyclerView,
     itemClick: (Any) -> Unit
-) : MyRecyclerViewAdapter(activity, recyclerView, itemClick), RecyclerViewFastScroller.OnPopupTextUpdate {
+) : MyRecyclerViewAdapter(activityN, recyclerView, itemClick), RecyclerViewFastScroller.OnPopupTextUpdate {
 
     private lateinit var fileDrawable: Drawable
     private lateinit var folderDrawable: Drawable
     private var fileDrawables = HashMap<String, Drawable>()
+    private lateinit var colorTintList: ColorStateList
     private val hasOTGConnected = activity.hasOTGConnected()
     private val cornerRadius = resources.getDimension(R.dimen.rounded_corner_radius_small).toInt()
     private val dateFormat = activity.baseConfig.dateFormat
     private val timeFormat = activity.getTimeFormat()
+    private var selectableItemCount = 0
 
     init {
         initDrawables()
+        selectableItemCount = fileDirItems.count { !it.isDirectory }
     }
 
-    override fun getActionMenuId() = 0
+    override fun getActionMenuId() = R.menu.menu_aes_select
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = createViewHolder(R.layout.aes_file_item, parent)
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val fileDirItem = fileDirItems[position]
-        holder.bindView(fileDirItem, true, false) { itemView, adapterPosition ->
-            setupView(itemView, fileDirItem)
+        holder.bindView(fileDirItem, true, true) { itemView, adapterPosition ->
+            setupView(itemView, fileDirItem, adapterPosition)
         }
         bindViewHolder(holder)
+        if (fileDirItem.isDirectory) {
+            holder.itemView.setOnLongClickListener(null)
+        }
     }
 
     override fun getItemCount() = fileDirItems.size
 
-    override fun prepareActionMode(menu: Menu) {}
+    override fun prepareActionMode(menu: Menu) {
 
-    override fun actionItemPressed(id: Int) {}
+    }
 
-    override fun getSelectableItemCount() = fileDirItems.size
+    override fun actionItemPressed(id: Int) {
+        activityN.onActionItemClick(id)
+    }
 
-    override fun getIsItemSelectable(position: Int) = false
+    override fun getSelectableItemCount() = selectableItemCount
+
+    override fun getIsItemSelectable(position: Int) = !fileDirItems[position].isDirectory
 
     override fun getItemKeyPosition(key: Int) = fileDirItems.indexOfFirst { it.path.hashCode() == key }
 
@@ -72,6 +87,11 @@ class AESFileAdapter(
 
     override fun onActionModeDestroyed() {}
 
+    fun getSelectedItems(): List<AESDirItem> {
+        return fileDirItems.filter { selectedKeys.contains(it.path.hashCode()) }
+    }
+
+
     override fun onViewRecycled(holder: ViewHolder) {
         super.onViewRecycled(holder)
         if (!activity.isDestroyed && !activity.isFinishing) {
@@ -79,8 +99,10 @@ class AESFileAdapter(
         }
     }
 
-    private fun setupView(view: View, fileDirItem: AESDirItem) {
+    private fun setupView(view: View, fileDirItem: AESDirItem, position: Int) {
+        val isItemSelected = selectedKeys.contains(getItemSelectionKey(position))
         view.apply {
+            isActivated = isItemSelected
             list_item_display_name.text = fileDirItem.displayName.ifEmpty { fileDirItem.name }
             list_item_display_name.setTextColor(textColor)
 
@@ -89,11 +111,19 @@ class AESFileAdapter(
 
             list_item_details.setTextColor(textColor)
 
+            if (fileDirItem.fileInfo != null && fileDirItem.fileInfo!!.duration > 0) {
+                list_item_duration.beVisible()
+                list_item_duration.setText("${(fileDirItem.fileInfo!!.duration / 1000).toInt().getFormattedDuration()}")
+            } else {
+                list_item_duration.beGone()
+            }
+
             if (fileDirItem.isDirectory) {
                 list_item_icon.setImageDrawable(folderDrawable)
                 list_item_details.text = getChildrenCnt(fileDirItem)
+
             } else {
-                list_item_details.text = "${(fileDirItem.duration / 1000).toInt().getFormattedDuration()} - ${fileDirItem.size.formatSize()}"
+                list_item_details.text = "${fileDirItem.size.formatSize()} | ${fileDirItem.fileInfo?.lastMod?.formatDate(activity)}"
                 val path = fileDirItem.path
                 val placeholder = fileDrawables.getOrElse(fileDirItem.name.substringAfterLast(".").toLowerCase(Locale.getDefault()), { fileDrawable })
                 val options = RequestOptions()
@@ -128,7 +158,6 @@ class AESFileAdapter(
                     if (itemToLoad.toString().isGif()) {
                         Glide.with(activity).asBitmap().load(itemToLoad).apply(options).into(list_item_icon)
                     } else {
-                        println(">>>> item is $itemToLoad")
                         Glide.with(activity)
                             .load(itemToLoad)
                             .transition(withCrossFade())
@@ -138,6 +167,8 @@ class AESFileAdapter(
                     }
                 }
             }
+            list_item_icon.imageTintList = if (isItemSelected) colorTintList else null
+            list_item_selected.beVisibleIf(isItemSelected)
         }
     }
 
@@ -147,10 +178,11 @@ class AESFileAdapter(
     }
 
     private fun initDrawables() {
-        folderDrawable = resources.getColoredDrawableWithColor(R.drawable.ic_folder_vector, textColor)
+        folderDrawable = resources.getColoredDrawableWithColor(R.drawable.ic_folder_vector, activity.getColor(R.color.md_grey_400))
         folderDrawable.alpha = 180
         fileDrawable = resources.getDrawable(R.drawable.ic_file_generic)
         fileDrawables = getFilePlaceholderDrawables(activity)
+        colorTintList = ColorStateList.valueOf(ContextCompat.getColor(activity, R.color.selected_tint_color))
     }
 
     override fun onChange(position: Int) = fileDirItems.getOrNull(position)?.getBubbleText(activity, dateFormat, timeFormat) ?: ""

@@ -1,5 +1,6 @@
 package com.simplemobiletools.gallery.pro.aes
 
+import AESDecryptWorker
 import android.app.Activity
 import android.content.ClipData
 import android.content.Intent
@@ -15,6 +16,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.*
 import com.google.android.material.textfield.TextInputEditText
@@ -38,7 +40,8 @@ import java.io.File
 
 private const val DEFAULT_PIN = "1111"
 private const val DEFAULT_PIN_LENGTH = 4
-private const val ENCRYPT_WORKER_TAG = "Encrypt Data"
+private const val ENCRYPT_WORKER_TAG = "encrypt_data_worker"
+private const val DECRYPT_WORKER_TAG = "decrypt_data_worker"
 
 class AESActivity : SimpleActivity() {
     private var mStartForResult: ActivityResultLauncher<Intent>? = null
@@ -48,6 +51,7 @@ class AESActivity : SimpleActivity() {
     private var mFirstUpdate = true
     private var mPrevPath = ""
     private var mScrollStates = HashMap<String, Parcelable>()
+    private var adapter: AESFileAdapter? = null
 
     protected override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -171,13 +175,29 @@ class AESActivity : SimpleActivity() {
     private fun updateToolbar() {
         toolbar.inflateMenu(R.menu.menu_aes)
         toolbar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.add_album -> addToVault(AESFileTypes.Album)
-                R.id.add_image -> addToVault(AESFileTypes.Image)
-                R.id.add_video -> addToVault(AESFileTypes.Video)
-                R.id.reset -> resetVault()
-                else -> return@setOnMenuItemClickListener false
+            onActionItemClick(it.itemId)
+        }
+    }
+
+    private fun decryptSelectedFiles(): Boolean {
+        adapter?.let { sit ->
+            linePrint("Selected items ${sit.getSelectedItems().size}")
+            sit.getSelectedItems().forEach {
+                startDecryption(it.path)
             }
+        }
+        return true
+    }
+
+    fun onActionItemClick(itemId: Int): Boolean {
+        return when (itemId) {
+            R.id.add_album -> addToVault(AESFileTypes.Album)
+            R.id.add_image -> addToVault(AESFileTypes.Image)
+            R.id.add_video -> addToVault(AESFileTypes.Video)
+            R.id.reset -> resetVault()
+            R.id.delete -> true
+            R.id.decrypt -> decryptSelectedFiles()
+            else -> false
         }
     }
 
@@ -357,15 +377,15 @@ class AESActivity : SimpleActivity() {
                 lastModified = 0    // we don't actually need the real lastModified that badly, do not check file.lastModified()
             }
             if (isDirectory) {
-                val children = file.getDirectChildrenCount(this, true)
+                val children = file.getVaultDirChildrenCount()
                 items.add(AESHelper.decryptAlbumData(AESDirItem(curPath, curName, isDirectory, children, size, lastModified)))
             }
 
             if (extn.isExtVideo()) {
                 if (file.extension == "sys") {
-                    items.add(AESHelper.decryptVideoFileData(this, AESDirItem(curPath, curName, isDirectory, 0, size, lastModified).apply {
-                        mInfoFile = File(parentPath, nameWithoutExt + AESFileUtils.AES_META_EXT)
-                        mThumbFile = File(parentPath, nameWithoutExt + AESFileUtils.AES_THUMB_EXT)
+                    items.add(AESHelper.decryptMediaFileData(this, AESDirItem(curPath, curName, isDirectory, 0, size, lastModified).apply {
+                        mInfoFile = File(parentPath, nameWithoutExt + AES_META_EXT)
+                        mThumbFile = File(parentPath, nameWithoutExt + AES_THUMB_EXT)
                         encodedName = nameWithoutExt
                     }))
                 } else {
@@ -374,9 +394,10 @@ class AESActivity : SimpleActivity() {
             }
 
             if (extn.isExtImage()) {
-                if (extn == AESFileUtils.AES_IMAGE_EXT) {
-                    items.add(AESHelper.decryptImageFileData(this, AESDirItem(curPath, curName, isDirectory, 0, size, lastModified).apply {
-                        mThumbFile = File(parentPath, nameWithoutExt + AESFileUtils.AES_THUMB_EXT)
+                if (extn == AES_IMAGE_EXT) {
+                    items.add(AESHelper.decryptMediaFileData(this, AESDirItem(curPath, curName, isDirectory, 0, size, lastModified).apply {
+                        mInfoFile = File(parentPath, nameWithoutExt + AES_META_EXT)
+                        mThumbFile = File(parentPath, nameWithoutExt + AES_THUMB_EXT)
                         encodedName = nameWithoutExt
                     }))
                 } else {
@@ -394,14 +415,10 @@ class AESActivity : SimpleActivity() {
 //        }
 
         val sortedItems = items.sortedWith(compareBy({ !it.isDirectory }, { it.name.toLowerCase() }))
-        val adapter = AESFileAdapter(this, sortedItems, filepicker_list) {
+        adapter = AESFileAdapter(this, sortedItems, filepicker_list) {
             if ((it as FileDirItem).isDirectory) {
-                handleLockedFolderOpening(it.path) { success ->
-                    if (success) {
-                        currPath = it.path
-                        tryUpdateItems()
-                    }
-                }
+                currPath = it.path
+                tryUpdateItems()
             } else {
                 openMediaFile(it.path)
             }
@@ -413,9 +430,8 @@ class AESActivity : SimpleActivity() {
 
         filepicker_list.adapter = adapter
 
-        if (areSystemAnimationsEnabled) {
+        if (mPrevPath != currPath)
             filepicker_list.scheduleLayoutAnimation()
-        }
 
         layoutManager.onRestoreInstanceState(mScrollStates[currPath.trimEnd('/')])
 
@@ -436,13 +452,28 @@ class AESActivity : SimpleActivity() {
         }
     }
 
+    private fun startDecryption(filePath: String) {
+        AESHelper.aesProgress?.start()
+        linePrint("starting work for $filePath")
+        val inputData =
+            Data.Builder().putString("toPath", File(Environment.getExternalStorageDirectory(), "Backdrops").absolutePath).putString("fromFile", filePath)
+
+        val workRequest = OneTimeWorkRequestBuilder<AESDecryptWorker>()
+            .addTag(DECRYPT_WORKER_TAG)
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .setInputData(inputData.build())
+            .build()
+
+        WorkManager.getInstance(this).beginUniqueWork("$ENCRYPT_WORKER_TAG $filePath", ExistingWorkPolicy.KEEP, workRequest).enqueue()
+    }
+
     private fun startEncryption(filePath: String) {
         AESHelper.aesProgress?.start()
         linePrint("starting work for $filePath")
         val inputData = Data.Builder().putString("toPath", currPath).putString("fromFile", filePath)
 
         val workRequest = OneTimeWorkRequestBuilder<AESEncryptWorker>()
-            .addTag("ENCRYPT_WORKER_TAG")
+            .addTag(ENCRYPT_WORKER_TAG)
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setInputData(inputData.build())
             .build()

@@ -14,12 +14,15 @@ import android.util.Log
 import android.util.Size
 import java.io.*
 import javax.crypto.Cipher
+import javax.crypto.CipherInputStream
+
+const val AES_VIDEO_EXT = ".sys"
+const val AES_IMAGE_EXT = ".inx"
+const val AES_THUMB_EXT = ".dat"
+const val AES_META_EXT = ".nfo"
+const val AES_THUMB_SIZE = 512
 
 object AESFileUtils {
-    const val AES_VIDEO_EXT = ".sys"
-    const val AES_IMAGE_EXT = ".inx"
-    const val AES_THUMB_EXT = ".dat"
-    const val AES_META_EXT = ".nfo"
 
     @Throws(FileNotFoundException::class)
     fun getOutputStream(file: File?, context: Context, z: Boolean): OutputStream? {
@@ -39,28 +42,39 @@ object AESFileUtils {
 
     @SuppressLint("NewApi")
     fun getImageThumbnail(file: File): ByteArray? {
-        val thumb: Bitmap = ThumbnailUtils.createImageThumbnail(file, Size(512, 512), null)
+        val thumb: Bitmap = ThumbnailUtils.createImageThumbnail(file, Size(AES_THUMB_SIZE, AES_THUMB_SIZE), null)
         return bitmapToByteArray(thumb)
     }
 
-    fun getVideoThumbnail(str: String): ByteArray? {
-        val thumbnailVideoFull: Bitmap? = ThumbnailUtils.createVideoThumbnail(str, MINI_KIND);
+    @SuppressLint("NewApi")
+    fun getVideoThumbnail(file: File): ByteArray? {
+        val thumbnailVideoFull: Bitmap? = ThumbnailUtils.createVideoThumbnail(file, Size(AES_THUMB_SIZE, AES_THUMB_SIZE), null);
         if (thumbnailVideoFull != null) {
             return bitmapToByteArray(thumbnailVideoFull)
         }
-        println(">>>>>> null thumb, $str")
+        println(">>>>>> null thumb, ${file.name}")
         return null
     }
 
-    fun getDuration(str: String): ByteArray {
+    fun getDuration(str: String): String? {
         val mediaMetadataRetriever = MediaMetadataRetriever()
         mediaMetadataRetriever.setDataSource(str)
-        return mediaMetadataRetriever.extractMetadata(METADATA_KEY_DURATION)!!.encodeToByteArray()
+        return mediaMetadataRetriever.extractMetadata(METADATA_KEY_DURATION)
     }
 
-    fun decodeFileData(context: Context, file: File): ByteArray? {
+    fun getMediaFileData(file: File, type: AESFileTypes): ByteArray {
+        val fileData = AESFileInfo(
+            duration = if (type == AESFileTypes.Video) getDuration(file.absolutePath)?.toInt() ?: 0 else 0,
+            lastMod = file.lastModified()
+        )
+        return fileData.toJsonString().encodeToByteArray()
+    }
+
+    fun decodeFileData(context: Context, file: File, cipher: Cipher? = null): ByteArray? {
         try {
-            val inputStream: InputStream? = context.getContentResolver().openInputStream(Uri.fromFile(file))
+            val inputStream = with(context.contentResolver.openInputStream(Uri.fromFile(file))) {
+                if (cipher != null) CipherInputStream(this, cipher) else this
+            }
             if (inputStream != null) {
                 val outputStream = ByteArrayOutputStream()
                 //val aesInputStream = helper.getCipherInputStream(inputStream)

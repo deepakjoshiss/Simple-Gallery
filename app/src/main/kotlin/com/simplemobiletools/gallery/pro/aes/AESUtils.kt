@@ -1,14 +1,18 @@
 package com.simplemobiletools.gallery.pro.aes
 
 import android.util.Log
+import com.google.gson.Gson
 import java.security.Key
 import java.security.SecureRandom
 import java.security.spec.AlgorithmParameterSpec
+import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.Comparator
+import kotlin.collections.HashMap
 
 const val PRINT_TAG = ">>>>"
 
@@ -35,11 +39,15 @@ data class AESCipher(var salt: ByteArray, var iv: ByteArray, var cipher: Cipher)
 
 data class AESImageModel(var path: String)
 
+data class AESFileInfo(var duration: Int, var lastMod: Long)
+
 fun linePrint(msg: String) {
     Log.d(PRINT_TAG, msg)
 }
 
 object AESUtils {
+
+    var gson = Gson()
 
     fun createRandomByteArray(size: Int): ByteArray {
         val random = SecureRandom()
@@ -141,5 +149,21 @@ object AESUtils {
 
     fun createDataIVSpec(): IvParameterSpec {
         return IvParameterSpec(DATA_IV.encodeToByteArray())
+    }
+
+    fun <K, V> limitSort(map: Map<K, V>, n: Int, comparator: Comparator<Map.Entry<K, V>>): Set<Map.Entry<K, V>> {
+        val topN: PriorityQueue<Map.Entry<K, V>> = PriorityQueue<Map.Entry<K, V>>(n, comparator)
+        map.forEach() {
+            if (topN.size < n) topN.add(it) else if (comparator.compare(topN.peek(), it) > 0) {
+                topN.poll()
+                topN.add(it)
+            }
+        }
+//        var iter = topN.iterator()
+//        while (iter.hasNext()) {
+//             linePrint("Progress ${iter.next().value}")
+//        }
+//        linePrint("end")
+        return topN.toSet()
     }
 }

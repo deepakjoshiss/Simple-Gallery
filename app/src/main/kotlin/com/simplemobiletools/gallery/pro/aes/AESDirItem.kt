@@ -17,7 +17,7 @@ class AESDirItem(
     var mInfoFile: File? = null
     var encodedName: String = name
     var displayName: String = ""
-    var duration: Long = 0L
+    var fileInfo: AESFileInfo? = null
 
     init {
         //  println(">>>> $path    $name    $isDirectory")

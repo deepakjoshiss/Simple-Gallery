@@ -1,11 +1,11 @@
 package com.simplemobiletools.gallery.pro.aes
 
 import android.content.Context
-import com.simplemobiletools.commons.helpers.PRIMARY_ANDROID_DATA_TREE_URI
-import com.simplemobiletools.commons.helpers.videoExtensions
-import com.simplemobiletools.gallery.pro.aes.AESFileUtils.AES_IMAGE_EXT
-import com.simplemobiletools.gallery.pro.aes.AESFileUtils.AES_VIDEO_EXT
-
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
+import com.google.gson.internal.Primitives
+import java.io.File
+import java.lang.reflect.Type
 
 const val AES_PREFS_KEY = "AesPrefs"
 const val AES_TOKEN_KEY = "aes_token"
@@ -34,15 +34,38 @@ class AESConfig(val context: Context) {
         set(uri) = prefs.edit().putString(AES_VAULT_KEY, uri).apply()
 }
 
+val gson = Gson()
 val Context.aesConfig: AESConfig get() = AESConfig.newInstance(this)
 
 val videoExtensionsN: Array<String> get() = arrayOf(".mp4", ".mkv", ".webm", ".avi", ".3gp", ".mov", ".m4v", ".3gpp", AES_VIDEO_EXT)
-val photoExtensionsN: Array<String> get() = arrayOf(".jpg", ".png", ".jpeg", ".bmp", ".webp", ".heic", ".heif", ".apng", ".avif", AES_IMAGE_EXT )
+val photoExtensionsN: Array<String> get() = arrayOf(".jpg", ".png", ".jpeg", ".bmp", ".webp", ".heic", ".heif", ".apng", ".avif", AES_IMAGE_EXT)
 
 fun String.isVideoFastN() = videoExtensionsN.any { endsWith(it, true) }
 fun String.isImageFastN() = photoExtensionsN.any { endsWith(it, true) }
 
 fun String.isExtVideo() = videoExtensionsN.any { equals(it, true) }
 fun String.isExtImage() = photoExtensionsN.any { equals(it, true) }
+
+fun String.isAESVideo() = this.endsWith(AES_VIDEO_EXT)
+
+
+fun Any.toJsonString(): String {
+    return gson.toJson(this)!!
+}
+
+fun <T> String.parseJson(classOfT: Class<T>): T? {
+    return try {
+        gson.fromJson(this, classOfT)
+    } catch (e: java.lang.Exception) {
+        null
+    }
+}
+
+fun File.getVaultDirChildrenCount(): Int {
+    list()?.let {
+        return it.count{path -> !(path.endsWith(AES_THUMB_EXT) || path.endsWith(AES_META_EXT))}
+    }
+    return 0
+}
 
 

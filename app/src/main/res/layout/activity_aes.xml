@@ -18,13 +18,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <RelativeLayout
+        <FrameLayout
             android:id="@+id/filepicker_holder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone">
 
-            <RelativeLayout
+            <FrameLayout
                 android:id="@+id/filepicker_files_holder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
@@ -51,40 +51,13 @@
                         android:id="@+id/filepicker_list"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginStart="@dimen/medium_margin"
-                        android:layoutAnimation="@anim/layout_animation"
+                        android:layoutAnimation="@anim/anim_file_list"
                         android:scrollbars="none"
                         app:layoutManager="com.simplemobiletools.commons.views.MyLinearLayoutManager" />
 
                 </com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller>
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/filepicker_favorites_holder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="gone">
-
-                <com.simplemobiletools.commons.views.MyTextView
-                    android:id="@+id/filepicker_favorites_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/medium_margin"
-                    android:padding="@dimen/activity_margin"
-                    android:text="@string/favorites"
-                    android:textSize="@dimen/bigger_text_size" />
-
-                <com.simplemobiletools.commons.views.MyRecyclerView
-                    android:id="@+id/filepicker_favorites_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_below="@+id/filepicker_favorites_label"
-                    android:layout_marginStart="@dimen/activity_margin"
-                    android:scrollbars="none"
-                    app:layoutManager="com.simplemobiletools.commons.views.MyLinearLayoutManager" />
-
-            </RelativeLayout>
-        </RelativeLayout>
+            </FrameLayout>
+        </FrameLayout>
 
         <FrameLayout
             android:id="@+id/container"

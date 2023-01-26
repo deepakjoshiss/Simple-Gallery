@@ -2,6 +2,7 @@
 <resources>
     <dimen name="rounded_corner_radius_big">8dp</dimen>
     <color name="aes_toolbar_color">#aa000000</color>
+    <color name="selected_tint_color">#88000000</color>
     <color name="md_grey_900">#202020</color>
     <color name="md_grey_900_dark">#111111</color>
 

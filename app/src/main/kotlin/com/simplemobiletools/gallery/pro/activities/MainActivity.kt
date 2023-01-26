@@ -323,7 +323,7 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
     }
 
     fun launchAESDonate() {
-        AESDonateDialog(this)
+        startActivity(Intent(this, AESActivity::class.java))
     }
 
     private fun refreshMenuItems() {

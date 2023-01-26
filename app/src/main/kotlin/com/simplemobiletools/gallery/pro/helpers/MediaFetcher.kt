@@ -14,8 +14,7 @@ import android.text.format.DateFormat
 import com.simplemobiletools.commons.extensions.*
 import com.simplemobiletools.commons.helpers.*
 import com.simplemobiletools.gallery.pro.R
-import com.simplemobiletools.gallery.pro.aes.isImageFastN
-import com.simplemobiletools.gallery.pro.aes.isVideoFastN
+import com.simplemobiletools.gallery.pro.aes.*
 import com.simplemobiletools.gallery.pro.extensions.*
 import com.simplemobiletools.gallery.pro.models.Medium
 import com.simplemobiletools.gallery.pro.models.ThumbnailItem
@@ -321,7 +320,8 @@ class MediaFetcher(val context: Context) {
             var path = file.absolutePath
             var isPortrait = false
             val isImage = path.isImageFastN()
-            val isVideo = if (isImage) false else path.isVideoFastN()
+            val isAESVideo = if (isImage) false else path.isAESVideo()
+            val isVideo = isAESVideo || if (isImage) false else path.isVideoFastN()
             val isGif = if (isImage || isVideo) false else path.isGif()
             val isRaw = if (isImage || isVideo || isGif) false else path.isRawFast()
             val isSvg = if (isImage || isVideo || isGif || isRaw) false else path.isSvg()
@@ -383,21 +383,26 @@ class MediaFetcher(val context: Context) {
                     media.add(this)
                 }
             } else {
+                val aesFileInfo = AESHelper.mFileInfoCache[path]
                 var lastModified: Long
-                var newLastModified = lastModifieds.remove(path)
-                if (newLastModified == null) {
-                    newLastModified = if (getProperLastModified) {
-                        file.lastModified()
-                    } else {
-                        0L
+                if (isAESVideo) {
+                    lastModified = aesFileInfo?.lastMod ?: 0L
+                } else {
+                    var newLastModified = lastModifieds.remove(path)
+                    if (newLastModified == null) {
+                        newLastModified = if (getProperLastModified) {
+                            file.lastModified()
+                        } else {
+                            0L
+                        }
                     }
+                    lastModified = newLastModified
                 }
-                lastModified = newLastModified
 
                 var dateTaken = lastModified
-                val videoDuration = if (getVideoDurations && isVideo) context.getDuration(path) ?: 0 else 0
+                val videoDuration: Int = if (isAESVideo) aesFileInfo?.duration ?: 0 else if (getVideoDurations && isVideo) context.getDuration(path) ?: 0 else 0
 
-                if (getProperDateTaken) {
+                if (!isAESVideo && getProperDateTaken) {
                     var newDateTaken = dateTakens.remove(path)
                     if (newDateTaken == null) {
                         newDateTaken = if (getProperLastModified) {

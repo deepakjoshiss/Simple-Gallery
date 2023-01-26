@@ -25,7 +25,7 @@ import com.simplemobiletools.commons.helpers.ensureBackgroundThread
 import com.simplemobiletools.gallery.pro.R
 import com.simplemobiletools.gallery.pro.activities.PanoramaVideoActivity
 import com.simplemobiletools.gallery.pro.activities.VideoActivity
-import com.simplemobiletools.gallery.pro.aes.AESHelper
+import com.simplemobiletools.gallery.pro.aes.*
 import com.simplemobiletools.gallery.pro.extensions.config
 import com.simplemobiletools.gallery.pro.extensions.hasNavBar
 import com.simplemobiletools.gallery.pro.extensions.parseFileChannel
@@ -76,6 +76,7 @@ class VideoFragment : ViewPagerFragment(), TextureView.SurfaceTextureListener, S
     private lateinit var mCurrTimeView: TextView
     private lateinit var mPlayPauseButton: ImageView
     private lateinit var mSeekBar: SeekBar
+    private var mAESVideo = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = requireContext()
@@ -83,6 +84,7 @@ class VideoFragment : ViewPagerFragment(), TextureView.SurfaceTextureListener, S
         val arguments = requireArguments()
 
         mMedium = arguments.getSerializable(MEDIUM) as Medium
+        mAESVideo = mMedium.name.isAESVideo()
         mConfig = context.config
         mView = inflater.inflate(R.layout.pager_video_item, container, false).apply {
             panorama_outline.setOnClickListener { openPanorama() }
@@ -161,7 +163,12 @@ class VideoFragment : ViewPagerFragment(), TextureView.SurfaceTextureListener, S
         }
 
         storeStateVariables()
-        Glide.with(context).load(mMedium.path).into(mView.video_preview)
+        if(mAESVideo) {
+            val th =  mMedium.path.substring(0, mMedium.path.lastIndexOf('.')) + AES_THUMB_EXT
+            Glide.with(context).load(AESImageModel(th)).into(mView.video_preview)
+        } else {
+            Glide.with(context).load(mMedium.path).into(mView.video_preview)
+        }
 
         // setMenuVisibility is not called at VideoActivity (third party intent)
         if (!mIsFragmentVisible && activity is VideoActivity) {
@@ -362,15 +369,11 @@ class VideoFragment : ViewPagerFragment(), TextureView.SurfaceTextureListener, S
             activity?.showErrorToast(e)
             return
         }
-        println(">>>>>>>>>>>>> this is in fragment")
 
-//        val factory = DataSource.Factory { fileDataSource }
-//        val audioSource = ExtractorMediaSource(fileDataSource.uri, factory, DefaultExtractorsFactory(), null, null)
+        val factory = if (uri.toString().endsWith(AES_VIDEO_EXT))
+            AESHelper.createDataSourceFactory(null) else DataSource.Factory { fileDataSource }
+        val audioSource = ExtractorMediaSource(fileDataSource.uri, factory, DefaultExtractorsFactory(), null, null)
 
-
-        val dataSourceFactory: DataSource.Factory = AESHelper.createDataSourceFactory(null)
-
-        val audioSource = ExtractorMediaSource(fileDataSource.uri, dataSourceFactory, DefaultExtractorsFactory(), null, null)
 
 
         mPlayOnPrepared = true
@@ -693,12 +696,18 @@ class VideoFragment : ViewPagerFragment(), TextureView.SurfaceTextureListener, S
     }
 
     private fun setupVideoDuration() {
-        ensureBackgroundThread {
-            mDuration = context?.getDuration(mMedium.path) ?: 0
+        if (mAESVideo) {
+            mDuration = mMedium.videoDuration / 1000
+            setupTimeHolder()
+            setPosition(0)
+        } else {
+            ensureBackgroundThread {
+                mDuration = context?.getDuration(mMedium.path) ?: 0
 
-            activity?.runOnUiThread {
-                setupTimeHolder()
-                setPosition(0)
+                activity?.runOnUiThread {
+                    setupTimeHolder()
+                    setPosition(0)
+                }
             }
         }
     }

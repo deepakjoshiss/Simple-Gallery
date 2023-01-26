@@ -5,6 +5,7 @@ import android.media.ThumbnailUtils.createImageThumbnail
 import android.net.Uri
 import android.util.Log
 import android.util.Size
+import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -16,10 +17,12 @@ import com.simplemobiletools.gallery.pro.aes.AESFileUtils.encodeBase64Name
 import com.simplemobiletools.gallery.pro.aes.AESFileUtils.getDuration
 import com.simplemobiletools.gallery.pro.aes.AESFileUtils.getEncryptedFileName
 import com.simplemobiletools.gallery.pro.aes.AESFileUtils.getImageThumbnail
+import com.simplemobiletools.gallery.pro.aes.AESFileUtils.getMediaFileData
 import com.simplemobiletools.gallery.pro.aes.AESFileUtils.getVideoThumbnail
 import com.simplemobiletools.gallery.pro.aes.AESFileUtils.writeByteArrayToFile
 import com.simplemobiletools.gallery.pro.aes.AESHelper.decryptText
 import com.simplemobiletools.gallery.pro.aes.AESHelper.encryptionCypher
+import kotlinx.coroutines.delay
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -36,6 +39,7 @@ class AESEncryptWorker(context: Context, workerParams: WorkerParameters) : Worke
     private lateinit var mFrom: File
     private lateinit var mToPath: String
     private lateinit var mCipher: Cipher
+
 
     override fun doWork(): Result {
         try {
@@ -65,13 +69,12 @@ class AESEncryptWorker(context: Context, workerParams: WorkerParameters) : Worke
         }
 
         if (mFrom.isImageSlow()) {
-            val toFile = File(mToPath, encName + AESFileUtils.AES_IMAGE_EXT)
-            createThumb(mToPath, encName, getImageThumbnail(mFrom))
-            encryptToFile(toFile)
+            encryptImageFile(encName)
         }
 
     }
 
+    @Throws(Exception::class)
     private fun encryptToFile(toFile: File) {
         val inputStream: InputStream? = applicationContext.contentResolver.openInputStream(Uri.fromFile(mFrom))
         if (inputStream != null) {
@@ -88,7 +91,7 @@ class AESEncryptWorker(context: Context, workerParams: WorkerParameters) : Worke
                 totalBytesRead += bytesRead
                 if (totalBytesRead - lastReported >= pThr) {
                     val percent = (totalBytesRead * 100L) / totalBytes
-                    AESHelper.aesProgress?.setProgress(mFrom, percent.toInt())
+                    AESHelper.aesProgress?.setProgress(mFrom, with(percent.toInt()) { if (this == 100) 99 else this })
                     lastReported = totalBytesRead
                     //   linePrint("Reading from $mFrom $totalBytes $totalBytesRead ${percent}")
                 }
@@ -103,28 +106,34 @@ class AESEncryptWorker(context: Context, workerParams: WorkerParameters) : Worke
 
     @Throws(Exception::class)
     private fun encryptVideoFile(encName: String) {
-        val toFile = File(mToPath, encName + AESFileUtils.AES_VIDEO_EXT)
-        createVideoFileMeta(mToPath, encName)
+        val toFile = File(mToPath, encName + AES_VIDEO_EXT)
+
         encryptToFile(toFile)
+        createMediaFileMeta(mToPath, encName, AESFileTypes.Video)
+        createThumb(mToPath, encName, getVideoThumbnail(mFrom))
     }
 
-    private fun createVideoFileMeta(fileParentPath: String, nameWE: String) {
-        try {
-            val fromPath: String = mFrom.absolutePath
-            val dur: ByteArray = mCipher.doFinal(getDuration(fromPath))
-            writeByteArrayToFile(applicationContext, File(fileParentPath, nameWE + AESFileUtils.AES_META_EXT), dur)
-            createThumb(fileParentPath, nameWE, getVideoThumbnail(fromPath))
-        } catch (e: Exception) {
-            println(">>>> create meta error $fileParentPath $nameWE")
-            e.printStackTrace()
-        }
+    @Throws(Exception::class)
+    private fun encryptImageFile(encName: String) {
+        val toFile = File(mToPath, encName + AES_IMAGE_EXT)
+        encryptToFile(toFile)
+        createThumb(mToPath, encName, getImageThumbnail(mFrom))
+        createMediaFileMeta(mToPath, encName, AESFileTypes.Image)
+
     }
 
-    private fun createThumb(fileParentPath: String, nameWE: String, thumbData: ByteArray?): Boolean {
+    private fun createMediaFileMeta(fileParentPath: String, nameWE: String, type: AESFileTypes): File {
+        val fileInfo: ByteArray = mCipher.doFinal(getMediaFileData(mFrom, type))
+        return File(fileParentPath, nameWE + AES_META_EXT).also { writeByteArrayToFile(applicationContext, it, fileInfo) }
+    }
+
+    private fun createThumb(fileParentPath: String, nameWE: String, thumbData: ByteArray?): File? {
         thumbData?.let {
-            writeByteArrayToFile(applicationContext, File(fileParentPath, nameWE + AESFileUtils.AES_THUMB_EXT), mCipher.doFinal(it))
-            return true
+            return File(fileParentPath, nameWE + AES_THUMB_EXT).also { file ->
+                writeByteArrayToFile(applicationContext, file, mCipher.doFinal(it))
+
+            }
         }
-        return false
+        return null
     }
 }

@@ -50,6 +50,7 @@ import com.simplemobiletools.gallery.pro.activities.ViewPagerActivity
 import com.simplemobiletools.gallery.pro.adapters.PortraitPhotosAdapter
 import com.simplemobiletools.gallery.pro.aes.AESFileUtils
 import com.simplemobiletools.gallery.pro.aes.AESImageModel
+import com.simplemobiletools.gallery.pro.aes.AES_IMAGE_EXT
 import com.simplemobiletools.gallery.pro.extensions.config
 import com.simplemobiletools.gallery.pro.extensions.saveRotatedImageToFile
 import com.simplemobiletools.gallery.pro.extensions.sendFakeClick
@@ -443,7 +444,7 @@ class PhotoFragment : ViewPagerFragment() {
     }
 
     private fun loadWithGlide(path: String, addZoomableView: Boolean) {
-        val isAES = path.endsWith(AESFileUtils.AES_IMAGE_EXT)
+        val isAES = path.endsWith(AES_IMAGE_EXT)
         val priority = if (mIsFragmentVisible) Priority.IMMEDIATE else Priority.NORMAL
         val options = RequestOptions()
             .signature(mMedium.getKey())

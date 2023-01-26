@@ -19,7 +19,6 @@ import java.nio.ByteBuffer
 class AESImageModelLoader(val context: Context) : ModelLoader<AESImageModel, ByteBuffer> {
 
     override fun handles(model: AESImageModel): Boolean {
-        println(">>> in handles ${model.path}")
         return true
     }
 
@@ -32,11 +31,10 @@ class AESImageModelLoader(val context: Context) : ModelLoader<AESImageModel, Byt
 public class AESImageFetcher(val context: Context, val model: AESImageModel) : DataFetcher<ByteBuffer> {
 
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in ByteBuffer>) {
-        val arr = AESFileUtils.decodeFileData(context, File(model.path))
-         if(arr != null) {
-             callback.onDataReady(ByteBuffer.wrap(AESHelper.decrypt(arr)))
-             return
-         }
+        AESFileUtils.decodeFileData(context, File(model.path), AESHelper.decipher)?.let {
+            callback.onDataReady(ByteBuffer.wrap(it))
+            return
+        }
         callback.onLoadFailed(Exception(">>> FilePath not found ${model.path}"))
     }
 
