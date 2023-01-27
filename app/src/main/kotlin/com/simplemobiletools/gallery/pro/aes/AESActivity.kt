@@ -11,12 +11,9 @@ import android.provider.MediaStore
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.*
 import com.google.android.material.textfield.TextInputEditText
@@ -40,8 +37,6 @@ import java.io.File
 
 private const val DEFAULT_PIN = "1111"
 private const val DEFAULT_PIN_LENGTH = 4
-private const val ENCRYPT_WORKER_TAG = "encrypt_data_worker"
-private const val DECRYPT_WORKER_TAG = "decrypt_data_worker"
 
 class AESActivity : SimpleActivity() {
     private var mStartForResult: ActivityResultLauncher<Intent>? = null
@@ -70,13 +65,13 @@ class AESActivity : SimpleActivity() {
             return
         }
         onVaultFound(dec[1].decodeToString(), dec[0])
-        AESHelper.aesProgress = AESProgress(this, object : ProgressCallback {
-            override fun onProgress(name: String, progress: Int) {
-                if (progress == 100) {
-                    debounceUpdate(Unit)
-                }
-            }
-        })
+//        AESHelper.aesProgress = AESTasker(this, object : ProgressCallback {
+//            override fun onProgress(name: String, progress: Int) {
+//                if (progress == 100) {
+//                    debounceUpdate(Unit)
+//                }
+//            }
+//        })
 
 //        WorkManager.getInstance(this)
 //            .getWorkInfosByTag(ENCRYPT_WORKER_TAG)
@@ -112,7 +107,6 @@ class AESActivity : SimpleActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        AESHelper.aesProgress = null
     }
 
     override fun onBackPressed() {
@@ -182,9 +176,9 @@ class AESActivity : SimpleActivity() {
     private fun decryptSelectedFiles(): Boolean {
         adapter?.let { sit ->
             linePrint("Selected items ${sit.getSelectedItems().size}")
-            sit.getSelectedItems().forEach {
-                startDecryption(it.path)
-            }
+            AESHelper.tasker.showView(this)
+            AESHelper.startDecryption(sit.getSelectedItems(), File(Environment.getExternalStorageDirectory(), "Backdrops").absolutePath)
+
         }
         return true
     }
@@ -414,7 +408,7 @@ class AESActivity : SimpleActivity() {
 //            return
 //        }
 
-        val sortedItems = items.sortedWith(compareBy({ !it.isDirectory }, { it.name.toLowerCase() }))
+        val sortedItems = items.sortedWith(AESDirItemComparator)
         adapter = AESFileAdapter(this, sortedItems, filepicker_list) {
             if ((it as FileDirItem).isDirectory) {
                 currPath = it.path
@@ -452,32 +446,9 @@ class AESActivity : SimpleActivity() {
         }
     }
 
-    private fun startDecryption(filePath: String) {
-        AESHelper.aesProgress?.start()
-        linePrint("starting work for $filePath")
-        val inputData =
-            Data.Builder().putString("toPath", File(Environment.getExternalStorageDirectory(), "Backdrops").absolutePath).putString("fromFile", filePath)
-
-        val workRequest = OneTimeWorkRequestBuilder<AESDecryptWorker>()
-            .addTag(DECRYPT_WORKER_TAG)
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .setInputData(inputData.build())
-            .build()
-
-        WorkManager.getInstance(this).beginUniqueWork("$ENCRYPT_WORKER_TAG $filePath", ExistingWorkPolicy.KEEP, workRequest).enqueue()
-    }
-
     private fun startEncryption(filePath: String) {
-        AESHelper.aesProgress?.start()
+        AESHelper.tasker.showView(this)
         linePrint("starting work for $filePath")
-        val inputData = Data.Builder().putString("toPath", currPath).putString("fromFile", filePath)
-
-        val workRequest = OneTimeWorkRequestBuilder<AESEncryptWorker>()
-            .addTag(ENCRYPT_WORKER_TAG)
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .setInputData(inputData.build())
-            .build()
-
-        WorkManager.getInstance(this).beginUniqueWork("$ENCRYPT_WORKER_TAG $filePath", ExistingWorkPolicy.KEEP, workRequest).enqueue()
+        AESHelper.startEncryption(filePath, currPath)
     }
 }

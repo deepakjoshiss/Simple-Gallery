@@ -22,5 +22,35 @@ class AESDirItem(
     init {
         //  println(">>>> $path    $name    $isDirectory")
     }
+}
 
+val AESDirItemComparator: Comparator<AESDirItem> = object : Comparator<AESDirItem> {
+
+    fun compareName(o1: AESDirItem, o2: AESDirItem): Int {
+        val o1Name = o1.displayName ?: ""
+        val o2Name = o2.displayName ?: ""
+        return o1Name.compareTo(o2Name)
+    }
+
+    fun compareDir(o1: AESDirItem, o2: AESDirItem): Int? {
+        if (o1.isDirectory && o2.isDirectory) return compareName(o1, o2)
+        if (o1.isDirectory) return -1
+        if (o2.isDirectory) return 1
+        return null
+    }
+
+    fun compareLastModified(o1: AESDirItem, o2: AESDirItem): Int? {
+        val o1date = o1.fileInfo?.lastMod ?: 0
+        val o2date = o2.fileInfo?.lastMod ?: 0
+        if (o1date != o2date) {
+            return o2date.compareTo(o1date)
+        }
+        return null
+    }
+
+    override fun compare(o1: AESDirItem, o2: AESDirItem): Int {
+        compareDir(o1, o2)?.let { return it }
+        compareLastModified(o1, o2)?.let { return it }
+        return compareName(o1, o2)
+    }
 }

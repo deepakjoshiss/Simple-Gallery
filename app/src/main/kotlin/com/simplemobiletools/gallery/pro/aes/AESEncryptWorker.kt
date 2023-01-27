@@ -39,22 +39,27 @@ class AESEncryptWorker(context: Context, workerParams: WorkerParameters) : Worke
     private lateinit var mFrom: File
     private lateinit var mToPath: String
     private lateinit var mCipher: Cipher
-
+    private lateinit var mTask: AESTaskInfo
+    private val tasker = AESHelper.tasker
 
     override fun doWork(): Result {
-        try {
-            mFrom = inputData.getString("fromFile")?.let { File(it) }!!
-            mToPath = inputData.getString("toPath")!!
-            mCipher = encryptionCypher
-            AESHelper.aesProgress?.setProgress(mFrom, 0)
-            encryptFile()
-            AESHelper.aesProgress?.setProgress(mFrom, 100)
-            return Result.success()
-        } catch (e: java.lang.Exception) {
-            linePrint(e.message.toString())
-            e.printStackTrace()
+        val taskId = inputData.getString("taskId") ?: ""
+        tasker.getTask(taskId)?.let {
+            mTask = it
+            mFrom = File(mTask.meta.fromPath)
+            mToPath = mTask.meta.toPath
+            tasker.setProgress(it.id, 0)
+            try {
+                mCipher = encryptionCypher
+                encryptFile()
+                tasker.setProgress(it.id, 100)
+                return Result.success()
+            } catch (e: java.lang.Exception) {
+                linePrint(e.message.toString())
+                e.printStackTrace()
+            }
         }
-        AESHelper.aesProgress?.setProgress(mFrom, 100)
+        tasker.setProgress(taskId, -1)
         return Result.failure()
     }
 
@@ -90,8 +95,8 @@ class AESEncryptWorker(context: Context, workerParams: WorkerParameters) : Worke
                 cipherOutputStream.write(buffer, 0, bytesRead)
                 totalBytesRead += bytesRead
                 if (totalBytesRead - lastReported >= pThr) {
-                    val percent = (totalBytesRead * 100L) / totalBytes
-                    AESHelper.aesProgress?.setProgress(mFrom, with(percent.toInt()) { if (this == 100) 99 else this })
+                    val percent = ((totalBytesRead * 100L) / totalBytes).toInt()
+                    tasker.setProgress(mTask.id, if (percent == 100) 99 else percent)
                     lastReported = totalBytesRead
                     //   linePrint("Reading from $mFrom $totalBytes $totalBytesRead ${percent}")
                 }

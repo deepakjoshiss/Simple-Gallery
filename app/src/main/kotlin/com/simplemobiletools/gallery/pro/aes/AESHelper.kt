@@ -1,15 +1,13 @@
 package com.simplemobiletools.gallery.pro.aes
 
 import android.content.Context
+import androidx.work.WorkManager
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.Cipher
-import javax.crypto.NoSuchPaddingException
-import java.security.NoSuchAlgorithmException
-import java.security.InvalidAlgorithmParameterException
-import java.security.InvalidKeyException
 import com.google.android.exoplayer2.upstream.TransferListener
 import com.simplemobiletools.commons.helpers.isOnMainThread
+import com.simplemobiletools.gallery.pro.App
 import java.io.InputStream
 import java.lang.Exception
 import javax.crypto.CipherInputStream
@@ -21,7 +19,10 @@ object AESHelper {
     private var mIvParameterSpec: IvParameterSpec? = null
     private lateinit var mCipher: Cipher
     private lateinit var mDataCipher: Cipher
-    var aesProgress: AESProgress? = null
+    val tasker: AESTasker
+        get() = field
+
+
     val mFileInfoCache: HashMap<String, AESFileInfo> = HashMap()
 
     val decipher: Cipher
@@ -41,6 +42,11 @@ object AESHelper {
 
     init {
         mIvParameterSpec = AESUtils.createDataIVSpec()
+        tasker = AESTasker(object : ProgressCallback {
+            override fun onProgress(name: String, progress: Int) {
+
+            }
+        })
     }
 
     fun setToken(token: ByteArray) {
@@ -53,6 +59,18 @@ object AESHelper {
             mDataCipher.init(Cipher.DECRYPT_MODE, mSecretKeySpec, mIvParameterSpec)
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    fun startEncryption(path: String, toPath: String) {
+        val type = AESTaskType.ENCRYPT
+        tasker.enqueueTask(AESUtils.createTaskInfo(path, type, AESTaskMeta(path, toPath, null)))
+    }
+
+    fun startDecryption(paths: List<AESDirItem>, toPath: String) {
+        val type = AESTaskType.DECRYPT
+        paths.forEach {
+            tasker.enqueueTask(AESUtils.createTaskInfo(it.path, type, AESTaskMeta(it.path, toPath, it)))
         }
     }
 
@@ -100,7 +118,11 @@ object AESHelper {
 //        return fileData
 //    }
 
-    fun decryptMediaFileData(context: Context, fileData: AESDirItem): AESDirItem {
+//    fun decyrptFileInfo(context: Context, file: File,  decipher: Cipher = this.decipher) {
+//
+//    }
+
+    fun decryptMediaFileData(context: Context, fileData: AESDirItem, decipher: Cipher = this.decipher): AESDirItem {
         try {
             val fileName = decipher.doFinal(AESFileUtils.decodeBase64Name(fileData.encodedName)).decodeToString()
             fileData.displayName = fileName

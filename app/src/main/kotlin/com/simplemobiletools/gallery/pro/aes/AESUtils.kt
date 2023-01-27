@@ -12,7 +12,6 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.Comparator
-import kotlin.collections.HashMap
 
 const val PRINT_TAG = ">>>>"
 
@@ -25,10 +24,31 @@ const val PASS_KEY_TRANSFORM = "AES/CBC/PKCS7Padding"
 const val DATA_IV = "a7c2d599fb131290"
 const val AES_TRANSFORMATION = "AES/CTR/NoPadding"
 
+const val ENCRYPT_WORKER_TAG = "encrypt_data_worker"
+const val DECRYPT_WORKER_TAG = "decrypt_data_worker"
+
 enum class AESFileTypes(val type: String) {
     Album("album"),
     Image("image"),
     Video("video")
+}
+
+enum class AESTaskState(val type: Int) {
+    PENDING(0),
+    STARTED(4),
+    COMPLETED(8),
+}
+
+enum class AESTaskStatus(val type: Int) {
+    RUNNING(0),
+    OK(2),
+    FAILED(4),
+}
+
+enum class AESTaskType(val type: Int) {
+    ENCRYPT(0),
+    DECRYPT(1),
+    MOVE(2),
 }
 
 data class AESText(var salt: ByteArray, var iv: ByteArray, var data: ByteArray)
@@ -40,6 +60,26 @@ data class AESCipher(var salt: ByteArray, var iv: ByteArray, var cipher: Cipher)
 data class AESImageModel(var path: String)
 
 data class AESFileInfo(var duration: Int, var lastMod: Long)
+
+data class AESTaskMeta(var fromPath: String, var toPath: String, var fileData: AESDirItem? = null)
+
+data class AESTaskInfo(
+    var id: String,
+    var type: AESTaskType,
+    var meta: AESTaskMeta,
+    var state: AESTaskState = AESTaskState.PENDING,
+    var status: AESTaskStatus = AESTaskStatus.RUNNING,
+    var progress: Int = 0
+)
+
+fun AESTaskInfo.isCompleted() = state == AESTaskState.COMPLETED
+
+fun AESTaskInfo.isSucceeded() = state == AESTaskState.COMPLETED && status == AESTaskStatus.OK
+
+fun AESTaskInfo.reset() {
+    state = AESTaskState.PENDING; status = AESTaskStatus.RUNNING
+}
+
 
 fun linePrint(msg: String) {
     Log.d(PRINT_TAG, msg)
@@ -151,19 +191,16 @@ object AESUtils {
         return IvParameterSpec(DATA_IV.encodeToByteArray())
     }
 
-    fun <K, V> limitSort(map: Map<K, V>, n: Int, comparator: Comparator<Map.Entry<K, V>>): Set<Map.Entry<K, V>> {
-        val topN: PriorityQueue<Map.Entry<K, V>> = PriorityQueue<Map.Entry<K, V>>(n, comparator)
-        map.forEach() {
-            if (topN.size < n) topN.add(it) else if (comparator.compare(topN.peek(), it) > 0) {
-                topN.poll()
-                topN.add(it)
+    fun createTaskInfo(path: String, type: AESTaskType, meta: AESTaskMeta): AESTaskInfo {
+        return AESTaskInfo(createTaskId(path, type), type, meta)
+    }
+
+    fun createTaskId(path: String, type: AESTaskType): String {
+        return "${
+            when (type) {
+                AESTaskType.DECRYPT -> DECRYPT_WORKER_TAG; AESTaskType.ENCRYPT -> ENCRYPT_WORKER_TAG
+                else -> ""
             }
-        }
-//        var iter = topN.iterator()
-//        while (iter.hasNext()) {
-//             linePrint("Progress ${iter.next().value}")
-//        }
-//        linePrint("end")
-        return topN.toSet()
+        }$path"
     }
 }
