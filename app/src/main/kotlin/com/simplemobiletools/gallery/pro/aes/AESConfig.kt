@@ -1,6 +1,8 @@
 package com.simplemobiletools.gallery.pro.aes
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.internal.Primitives
@@ -63,9 +65,16 @@ fun <T> String.parseJson(classOfT: Class<T>): T? {
 
 fun File.getVaultDirChildrenCount(): Int {
     list()?.let {
-        return it.count{path -> !(path.endsWith(AES_THUMB_EXT) || path.endsWith(AES_META_EXT))}
+        return it.count { path -> !(path.endsWith(AES_THUMB_EXT) || path.endsWith(AES_META_EXT)) }
     }
     return 0
+}
+
+fun Activity.startAesActivity(paths: ArrayList<String>) {
+    Intent(this, AESActivity::class.java).apply {
+        putExtra("paths", paths)
+        startActivity(this)
+    };
 }
 
 

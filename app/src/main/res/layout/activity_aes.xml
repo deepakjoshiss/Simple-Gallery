@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_grey_black"
     android:orientation="vertical">
 
 
@@ -58,6 +58,59 @@
                 </com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller>
             </FrameLayout>
         </FrameLayout>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/fab_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="48dp"
+            android:outlineSpotShadowColor="?colorPrimary"
+            android:clickable="true"
+            android:focusable="true"
+            android:elevation="2dp"
+            app:cardElevation="2dp"
+            app:cardMaxElevation="6dp"
+            app:cardBackgroundColor="?colorPrimary"
+            app:cardCornerRadius="100dp"
+            android:foreground="@drawable/bg_list_item"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:gravity="center"
+                android:minWidth="104dp"
+                android:minHeight="52dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/sfpro_display_medium"
+                    android:paddingHorizontal="24dp"
+                    android:text="Move Here"
+                    android:textSize="18sp" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="20dp"
+                    android:alpha="0.25"
+                    android:background="@android:color/white" />
+
+                <ImageView
+                    android:id="@+id/cancel_action"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:clickable="true"
+                    android:background="@drawable/bg_list_item"
+                    android:scaleType="center"
+                    android:src="@drawable/ic_cross_vector" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <FrameLayout
             android:id="@+id/container"

@@ -28,6 +28,7 @@ import com.simplemobiletools.commons.views.MyRecyclerView
 import com.simplemobiletools.gallery.pro.R
 import kotlinx.android.synthetic.main.aes_file_item.view.*
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.time.toDuration
 
 class AESFileAdapter(
@@ -87,8 +88,8 @@ class AESFileAdapter(
 
     override fun onActionModeDestroyed() {}
 
-    fun getSelectedItems(): List<AESDirItem> {
-        return fileDirItems.filter { selectedKeys.contains(it.path.hashCode()) }
+    fun getSelectedItems(): ArrayList<AESDirItem> {
+        return selectedKeys.mapNotNull { fileDirItems.getOrNull(getItemKeyPosition(it)) } as ArrayList<AESDirItem>
     }
 
 

@@ -48,6 +48,7 @@ class AESEncryptWorker(context: Context, workerParams: WorkerParameters) : Worke
             mTask = it
             mFrom = File(mTask.meta.fromPath)
             mToPath = mTask.meta.toPath
+            it.meta.displayName = mFrom.nameWithoutExtension
             tasker.setProgress(it.id, 0)
             try {
                 mCipher = encryptionCypher

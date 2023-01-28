@@ -21,7 +21,7 @@
 
             <item
                 android:id="@+id/move"
-                android:title="Move to" />
+                android:title="@string/move" />
 
         </menu>
     </item>

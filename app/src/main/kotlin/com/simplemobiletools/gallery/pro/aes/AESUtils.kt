@@ -5,13 +5,11 @@ import com.google.gson.Gson
 import java.security.Key
 import java.security.SecureRandom
 import java.security.spec.AlgorithmParameterSpec
-import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
-import kotlin.Comparator
 
 const val PRINT_TAG = ">>>>"
 
@@ -26,6 +24,8 @@ const val AES_TRANSFORMATION = "AES/CTR/NoPadding"
 
 const val ENCRYPT_WORKER_TAG = "encrypt_data_worker"
 const val DECRYPT_WORKER_TAG = "decrypt_data_worker"
+const val AES_TASK_UPDATE = "task_updated"
+const val AES_TASK_COMPLETE_COUNT = "task_complete_count"
 
 enum class AESFileTypes(val type: String) {
     Album("album"),
@@ -61,7 +61,7 @@ data class AESImageModel(var path: String)
 
 data class AESFileInfo(var duration: Int, var lastMod: Long)
 
-data class AESTaskMeta(var fromPath: String, var toPath: String, var fileData: AESDirItem? = null)
+data class AESTaskMeta(var fromPath: String, var toPath: String, var fileData: AESDirItem? = null, var displayName: String? =null)
 
 data class AESTaskInfo(
     var id: String,
@@ -79,7 +79,6 @@ fun AESTaskInfo.isSucceeded() = state == AESTaskState.COMPLETED && status == AES
 fun AESTaskInfo.reset() {
     state = AESTaskState.PENDING; status = AESTaskStatus.RUNNING
 }
-
 
 fun linePrint(msg: String) {
     Log.d(PRINT_TAG, msg)

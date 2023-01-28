@@ -70,7 +70,7 @@ object AESHelper {
     fun startDecryption(paths: List<AESDirItem>, toPath: String) {
         val type = AESTaskType.DECRYPT
         paths.forEach {
-            tasker.enqueueTask(AESUtils.createTaskInfo(it.path, type, AESTaskMeta(it.path, toPath, it)))
+            tasker.enqueueTask(AESUtils.createTaskInfo(it.path, type, AESTaskMeta(it.path, toPath, it, it.displayName)))
         }
     }
 
@@ -90,8 +90,12 @@ object AESHelper {
         return decipher.doFinal(arr)
     }
 
-    fun decryptFileName(encName: String): String {
+    fun decryptFileName(encName: String, decipher: Cipher = this.decipher): String {
         return decipher.doFinal(AESFileUtils.decodeBase64Name(encName)).decodeToString()
+    }
+
+    fun encryptFileName(name: String, encipher: Cipher = encryptionCypher): String {
+        return AESFileUtils.getEncryptedFileName(encipher, name)
     }
 
     fun decryptAlbumData(fileData: AESDirItem): AESDirItem {

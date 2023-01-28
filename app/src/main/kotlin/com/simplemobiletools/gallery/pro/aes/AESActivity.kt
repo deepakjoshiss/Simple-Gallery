@@ -1,9 +1,7 @@
 package com.simplemobiletools.gallery.pro.aes
 
-import AESDecryptWorker
 import android.app.Activity
-import android.content.ClipData
-import android.content.Intent
+import android.content.*
 import android.os.Bundle
 import android.os.Environment
 import android.os.Parcelable
@@ -14,11 +12,13 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.*
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
+import com.simplemobiletools.commons.dialogs.ConfirmationDialog
 import com.simplemobiletools.commons.dialogs.FilePickerDialog
 import com.simplemobiletools.commons.extensions.*
 import com.simplemobiletools.commons.helpers.IS_FROM_GALLERY
@@ -38,7 +38,7 @@ import java.io.File
 private const val DEFAULT_PIN = "1111"
 private const val DEFAULT_PIN_LENGTH = 4
 
-class AESActivity : SimpleActivity() {
+class AESActivity : SimpleActivity(), OnClickListener {
     private var mStartForResult: ActivityResultLauncher<Intent>? = null
     private var currPath: String = Environment.getExternalStorageDirectory().toString()
     private var vaultPath: String? = null
@@ -47,11 +47,16 @@ class AESActivity : SimpleActivity() {
     private var mPrevPath = ""
     private var mScrollStates = HashMap<String, Parcelable>()
     private var adapter: AESFileAdapter? = null
+    private var mPathsToMove: ArrayList<*>? = null
+    private var mActionType: AESTaskType? = null
+
+    private lateinit var mReceiver: BroadcastReceiver
 
     protected override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_aes)
         updateToolbar()
+        mPathsToMove = intent.getStringArrayListExtra("paths")?.also { mActionType = AESTaskType.ENCRYPT }
 //        if(aesConfig.aesVault.isNotEmpty()) {
 //            val dec = AESUtils.decryptVault(Gson().fromJson(aesConfig.aesVault, AESVault::class.java), "4399")
 //            println(">>>> ${dec?.get(0)?.decodeToString()}, ${dec?.get(1)?.decodeToString()}")
@@ -65,23 +70,24 @@ class AESActivity : SimpleActivity() {
             return
         }
         onVaultFound(dec[1].decodeToString(), dec[0])
-//        AESHelper.aesProgress = AESTasker(this, object : ProgressCallback {
-//            override fun onProgress(name: String, progress: Int) {
-//                if (progress == 100) {
-//                    debounceUpdate(Unit)
-//                }
-//            }
-//        })
 
-//        WorkManager.getInstance(this)
-//            .getWorkInfosByTag(ENCRYPT_WORKER_TAG)
-//            .addListener( { linePrint("Running Listenable future") }, { it?.run() })
-//
-////        val workQuery = WorkQuery.Builder
-////            .fromTags(listOf(ENCRYPT_WORKER_TAG))
-////            .build()
-////        val workInfos: ListenableFuture<List<WorkInfo>> = WorkManager.getInstance(this).getWorkInfos(workQuery)
-
+        mReceiver = object : BroadcastReceiver() {
+            var lastCompleted = 0
+            override fun onReceive(contxt: Context?, intent: Intent?) {
+                when (intent?.action) {
+                    AES_TASK_UPDATE -> {
+                        val count = intent.getIntExtra(AES_TASK_COMPLETE_COUNT, 0)
+                        val shouldUpdate = count != lastCompleted && intent.getBooleanExtra("hasEncrypt", false)
+                        //linePrint("action Brodcast rec $count $lastCompleted $shouldUpdate")
+                        if (shouldUpdate) {
+                            lastCompleted = count
+                            tryUpdateItems()
+                        }
+                    }
+                }
+            }
+        }
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, IntentFilter(AES_TASK_UPDATE))
 
         mStartForResult = registerForActivityResult<Intent, ActivityResult>(
             ActivityResultContracts.StartActivityForResult()
@@ -107,6 +113,7 @@ class AESActivity : SimpleActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver)
     }
 
     override fun onBackPressed() {
@@ -119,6 +126,15 @@ class AESActivity : SimpleActivity() {
         }
 
         super.onBackPressed()
+    }
+
+    private fun onVaultFound(folderPath: String, token: ByteArray) {
+        println(">>>> vault is $folderPath ${token.decodeToString()} ${DATA_IV.encodeToByteArray().size}")
+        AESHelper.setToken(token)
+        vaultPath = folderPath
+        filepicker_holder.visibility = View.VISIBLE
+        container.removeAllViews()
+        setUpFolderView()
     }
 
     private fun addToVault(fileType: AESFileTypes): Boolean {
@@ -140,15 +156,21 @@ class AESActivity : SimpleActivity() {
         return true
     }
 
+    private fun createAlbum(name: String): Boolean {
+        if (AESFileUtils.createAlbum(AESHelper.encryptionCypher, currPath, name)) {
+            tryUpdateItems()
+            return true
+        } else {
+            linePrint("Could not create folder $name at $currPath")
+        }
+        return false
+    }
+
     private fun openAddFolderDialog() {
         val callback = object : TextSubmitCallback {
             override fun onSubmit(text: String, meta: String?) {
                 linePrint("submit $text")
-                if (AESFileUtils.createAlbum(AESHelper.encryptionCypher, currPath, text)) {
-                    tryUpdateItems()
-                } else {
-                    linePrint("Could not create folder $text at $currPath")
-                }
+                createAlbum(text)
             }
 
             override fun onTextChange(text: String, meta: String?) {
@@ -160,9 +182,11 @@ class AESActivity : SimpleActivity() {
     }
 
     private fun resetVault(): Boolean {
-        filepicker_holder.visibility = View.GONE
-        aesConfig.aesVault = ""
-        setUpPinView()
+        ConfirmationDialog(this, "Reset Vault?") {
+            filepicker_holder.visibility = View.GONE
+            aesConfig.aesVault = ""
+            setUpPinView()
+        }
         return true
     }
 
@@ -174,13 +198,73 @@ class AESActivity : SimpleActivity() {
     }
 
     private fun decryptSelectedFiles(): Boolean {
-        adapter?.let { sit ->
-            linePrint("Selected items ${sit.getSelectedItems().size}")
+        adapter?.getSelectedItems()?.let {
+            linePrint("Selected items ${it.size}")
             AESHelper.tasker.showView(this)
-            AESHelper.startDecryption(sit.getSelectedItems(), File(Environment.getExternalStorageDirectory(), "Backdrops").absolutePath)
-
+            AESHelper.startDecryption(it, File(Environment.getExternalStorageDirectory(), "Backdrops").absolutePath)
         }
         return true
+    }
+
+    private fun moveSelectedFiles(): Boolean {
+        adapter?.getSelectedItems()?.let {
+            adapter!!.finishActMode()
+            resetActionData()
+            mActionType = AESTaskType.MOVE
+            mPathsToMove = it
+            setUpFABView()
+        }
+        return true
+    }
+
+    private fun resetActionData() {
+        mPathsToMove = null
+        mActionType = null
+        setUpFABView()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun performAction() {
+        if (mPathsToMove.isNullOrEmpty() || mActionType == null) {
+            resetActionData()
+            return
+        }
+        val actionType = mActionType
+        val paths: ArrayList<*> = mPathsToMove as ArrayList<*>
+        resetActionData()
+        linePrint("performing action ${paths.size} ${actionType}")
+        when (actionType) {
+            AESTaskType.ENCRYPT -> {
+                paths.forEach {
+                    if (it is String) {
+                        startEncryption(it)
+                    }
+                }
+            }
+            AESTaskType.DECRYPT -> {
+
+            }
+
+            AESTaskType.MOVE -> {
+                moveFiles(paths as ArrayList<AESDirItem>, paths[0].path.getParentPath(), currPath) {
+                    tryUpdateItems()
+                }
+            }
+            else -> {}
+        }
+    }
+
+    private fun cancelAction() {
+        ConfirmationDialog(this, "Cancel Move") {
+            resetActionData()
+        }
+    }
+
+    override fun onClick(v: View?) {
+        when (v?.id) {
+            fab_action.id -> performAction()
+            cancel_action.id -> cancelAction()
+        }
     }
 
     fun onActionItemClick(itemId: Int): Boolean {
@@ -191,17 +275,9 @@ class AESActivity : SimpleActivity() {
             R.id.reset -> resetVault()
             R.id.delete -> true
             R.id.decrypt -> decryptSelectedFiles()
+            R.id.move -> moveSelectedFiles()
             else -> false
         }
-    }
-
-    private fun onVaultFound(folderPath: String, token: ByteArray) {
-        println(">>>> vault is $folderPath ${token.decodeToString()} ${DATA_IV.encodeToByteArray().size}")
-        AESHelper.setToken(token)
-        vaultPath = folderPath
-        filepicker_holder.visibility = View.VISIBLE
-        container.removeAllViews()
-        setUpFolderView()
     }
 
     private fun createPinCallback(view: ClassicLockView): TextSubmitCallback {
@@ -306,7 +382,14 @@ class AESActivity : SimpleActivity() {
         })
     }
 
+    private fun setUpFABView() {
+        fab_action.beVisibleIf(!mPathsToMove.isNullOrEmpty())
+        fab_action.setOnClickListener(this)
+        cancel_action.setOnClickListener(this)
+    }
+
     private fun setUpFolderView() {
+        setUpFABView()
         vaultPath?.let { currPath = vaultPath!! }
         if (!getDoesFilePathExist(currPath)) {
             currPath = internalStoragePath
@@ -340,10 +423,6 @@ class AESActivity : SimpleActivity() {
         }
     }
 
-    val debounceUpdate = debounce<Unit>(1000, MainScope()) {
-        tryUpdateItems()
-    }
-
     private fun getItems(path: String, callback: (List<FileDirItem>) -> Unit) {
         val lastModifieds = getFolderLastModifieds(path)
         getRegularItems(path, lastModifieds, callback)
@@ -358,7 +437,6 @@ class AESActivity : SimpleActivity() {
         }
 
         for (file in files) {
-
             val curPath = file.absolutePath
             val curName = curPath.getFilenameFromPath()
             val nameWithoutExt = file.nameWithoutExtension
