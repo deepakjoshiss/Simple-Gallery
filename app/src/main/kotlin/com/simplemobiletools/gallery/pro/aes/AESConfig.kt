@@ -49,6 +49,7 @@ fun String.isExtVideo() = videoExtensionsN.any { equals(it, true) }
 fun String.isExtImage() = photoExtensionsN.any { equals(it, true) }
 
 fun String.isAESVideo() = this.endsWith(AES_VIDEO_EXT)
+fun String.isAESImage() = this.endsWith(AES_IMAGE_EXT)
 
 
 fun Any.toJsonString(): String {

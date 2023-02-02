@@ -22,7 +22,6 @@ object AESHelper {
     val tasker: AESTasker
         get() = field
 
-
     val mFileInfoCache: HashMap<String, AESFileInfo> = HashMap()
 
     val decipher: Cipher
@@ -60,6 +59,17 @@ object AESHelper {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    fun onDestroy() {
+        mSecretKeySpec = null
+        mCipher = Cipher.getInstance(AES_TRANSFORMATION)
+        mDataCipher = mCipher
+        mFileInfoCache.clear()
+    }
+
+    fun hasToken(): Boolean {
+        return mSecretKeySpec != null
     }
 
     fun startEncryption(path: String, toPath: String) {
@@ -149,4 +159,5 @@ object AESHelper {
 
         return fileData
     }
+
 }

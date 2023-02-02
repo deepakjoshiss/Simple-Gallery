@@ -6,8 +6,10 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Parcelable
 import android.provider.MediaStore
+import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnClickListener
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -24,6 +26,8 @@ import com.simplemobiletools.commons.extensions.*
 import com.simplemobiletools.commons.helpers.IS_FROM_GALLERY
 import com.simplemobiletools.commons.helpers.ensureBackgroundThread
 import com.simplemobiletools.commons.models.FileDirItem
+import com.simplemobiletools.commons.views.Breadcrumbs
+import com.simplemobiletools.gallery.pro.BuildConfig
 import com.simplemobiletools.gallery.pro.R
 import com.simplemobiletools.gallery.pro.activities.MainActivity
 import com.simplemobiletools.gallery.pro.activities.SimpleActivity
@@ -49,27 +53,30 @@ class AESActivity : SimpleActivity(), OnClickListener {
     private var adapter: AESFileAdapter? = null
     private var mPathsToMove: ArrayList<*>? = null
     private var mActionType: AESTaskType? = null
+    private var mBreadcrumbs: AESBreadcrumbs? = null
 
     private lateinit var mReceiver: BroadcastReceiver
 
     protected override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_aes)
-        updateToolbar()
         mPathsToMove = intent.getStringArrayListExtra("paths")?.also { mActionType = AESTaskType.ENCRYPT }
-//        if(aesConfig.aesVault.isNotEmpty()) {
-//            val dec = AESUtils.decryptVault(Gson().fromJson(aesConfig.aesVault, AESVault::class.java), "4399")
-//            println(">>>> ${dec?.get(0)?.decodeToString()}, ${dec?.get(1)?.decodeToString()}")
-//        }
-        //       setUpPinView()
 
-        val dec = AESUtils.decryptVault(Gson().fromJson(aesConfig.aesVault, AESVault::class.java), "4399")
-        if (dec == null) {
-            println(">>>> wrong pass}")
-            launchAbout()
-            return
+        if (BuildConfig.DEBUG) {
+            val dec = AESUtils.decryptVault(Gson().fromJson(aesConfig.aesVault, AESVault::class.java), "4399")
+            if (dec == null) {
+                println(">>>> wrong pass}")
+                launchAbout()
+                return
+            }
+            onVaultFound(dec[1].decodeToString(), dec[0])
         }
-        onVaultFound(dec[1].decodeToString(), dec[0])
+
+        if (aesConfig.aesVault.isNotEmpty()) {
+            val dec = AESUtils.decryptVault(Gson().fromJson(aesConfig.aesVault, AESVault::class.java), "4399")
+            println(">>>> ${dec?.get(0)?.decodeToString()}, ${dec?.get(1)?.decodeToString()}")
+        }
+        setUpPinView()
 
         mReceiver = object : BroadcastReceiver() {
             var lastCompleted = 0
@@ -113,14 +120,14 @@ class AESActivity : SimpleActivity(), OnClickListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        AESHelper.onDestroy()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver)
     }
 
     override fun onBackPressed() {
         if (vaultPath != null) {
             if (currPath != vaultPath) {
-                currPath = currPath.getParentPath()
-                tryUpdateItems()
+                setCurrentPath(currPath.getParentPath())
                 return
             }
         }
@@ -134,6 +141,7 @@ class AESActivity : SimpleActivity(), OnClickListener {
         vaultPath = folderPath
         filepicker_holder.visibility = View.VISIBLE
         container.removeAllViews()
+        updateToolbar()
         setUpFolderView()
     }
 
@@ -185,16 +193,52 @@ class AESActivity : SimpleActivity(), OnClickListener {
         ConfirmationDialog(this, "Reset Vault?") {
             filepicker_holder.visibility = View.GONE
             aesConfig.aesVault = ""
+            vaultPath = null
             setUpPinView()
         }
         return true
     }
 
     private fun updateToolbar() {
+        toolbar.removeView(mBreadcrumbs)
         toolbar.inflateMenu(R.menu.menu_aes)
+        toolbar.setTitleTextAppearance(this, R.style.styleBreadcrumbs)
+        mBreadcrumbs = LayoutInflater.from(this).inflate(R.layout.aes_breadcrumbs, toolbar, false) as AESBreadcrumbs
+        mBreadcrumbs!!.setBasePath(vaultPath ?: "")
+        mBreadcrumbs!!.listener = object : AESBreadcrumbs.BreadcrumbsListener {
+            override fun breadcrumbClicked(id: Int) {
+                linePrint(mBreadcrumbs?.getItem(id)?.path ?: vaultPath ?: "")
+                setCurrentPath(mBreadcrumbs?.getItem(id)?.path ?: vaultPath ?: "")
+            }
+
+        }
+        toolbar.addView(
+            mBreadcrumbs,
+            ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        )
+        toolbar.setNavigationOnClickListener {
+            vaultPath?.let {
+                if (it != currPath) {
+                    setCurrentPath(it)
+                    return@setNavigationOnClickListener
+                }
+            }
+            finish()
+        }
         toolbar.setOnMenuItemClickListener {
             onActionItemClick(it.itemId)
         }
+    }
+
+    private fun updateToolbarText() {
+        mBreadcrumbs?.setBreadcrumb(currPath)
+    }
+
+    private fun setCurrentPath(path: String) {
+        if (path == currPath) return
+        currPath = path
+        tryUpdateItems()
+        updateToolbarText()
     }
 
     private fun decryptSelectedFiles(): Boolean {
@@ -213,6 +257,17 @@ class AESActivity : SimpleActivity(), OnClickListener {
             mActionType = AESTaskType.MOVE
             mPathsToMove = it
             setUpFABView()
+        }
+        return true
+    }
+
+    private fun deleteSelectedFiles(): Boolean {
+        adapter?.getSelectedItems()?.let {
+            adapter!!.finishActMode()
+            resetActionData()
+            ConfirmationDialog(this, "Delete Selected Files") {
+
+            }
         }
         return true
     }
@@ -338,6 +393,7 @@ class AESActivity : SimpleActivity(), OnClickListener {
     }
 
     private fun setUpPinView() {
+        if (!vaultPath.isNullOrEmpty()) return
         container.removeAllViews();
         val view: ClassicLockView = layoutInflater.inflate(R.layout.password_classic_bottom, container, false) as ClassicLockView;
         view.setPassCallback(createPinCallback(view))
@@ -383,9 +439,14 @@ class AESActivity : SimpleActivity(), OnClickListener {
     }
 
     private fun setUpFABView() {
-        fab_action.beVisibleIf(!mPathsToMove.isNullOrEmpty())
-        fab_action.setOnClickListener(this)
-        cancel_action.setOnClickListener(this)
+        if (!vaultPath.isNullOrEmpty() && !mPathsToMove.isNullOrEmpty() && mActionType != null) {
+            fab_action.beVisible()
+            fab_text.setText(if (mActionType == AESTaskType.ENCRYPT) "Encrypt here" else "Move here")
+            fab_action.setOnClickListener(this)
+            cancel_action.setOnClickListener(this)
+        } else {
+            fab_action.beGone()
+        }
     }
 
     private fun setUpFolderView() {
@@ -407,6 +468,7 @@ class AESActivity : SimpleActivity(), OnClickListener {
         filepicker_placeholder.setTextColor(getProperTextColor())
         filepicker_fastscroller.updateColors(getProperPrimaryColor())
 
+        updateToolbarText()
         tryUpdateItems()
     }
 
@@ -448,12 +510,11 @@ class AESActivity : SimpleActivity(), OnClickListener {
             if (lastModified == null) {
                 lastModified = 0    // we don't actually need the real lastModified that badly, do not check file.lastModified()
             }
+
             if (isDirectory) {
                 val children = file.getVaultDirChildrenCount()
                 items.add(AESHelper.decryptAlbumData(AESDirItem(curPath, curName, isDirectory, children, size, lastModified)))
-            }
-
-            if (extn.isExtVideo()) {
+            } else if (extn.isExtVideo()) {
                 if (file.extension == "sys") {
                     items.add(AESHelper.decryptMediaFileData(this, AESDirItem(curPath, curName, isDirectory, 0, size, lastModified).apply {
                         mInfoFile = File(parentPath, nameWithoutExt + AES_META_EXT)
@@ -463,9 +524,7 @@ class AESActivity : SimpleActivity(), OnClickListener {
                 } else {
                     items.add(AESDirItem(curPath, curName, isDirectory, 0, size, lastModified))
                 }
-            }
-
-            if (extn.isExtImage()) {
+            } else if (extn.isExtImage()) {
                 if (extn == AES_IMAGE_EXT) {
                     items.add(AESHelper.decryptMediaFileData(this, AESDirItem(curPath, curName, isDirectory, 0, size, lastModified).apply {
                         mInfoFile = File(parentPath, nameWithoutExt + AES_META_EXT)
@@ -485,12 +544,11 @@ class AESActivity : SimpleActivity(), OnClickListener {
 //        if (!containsDirectory(items) && !mFirstUpdate) {
 //            return
 //        }
-
+        list_empty_view.beVisibleIf(items.isEmpty())
         val sortedItems = items.sortedWith(AESDirItemComparator)
         adapter = AESFileAdapter(this, sortedItems, filepicker_list) {
             if ((it as FileDirItem).isDirectory) {
-                currPath = it.path
-                tryUpdateItems()
+                setCurrentPath(it.path)
             } else {
                 openMediaFile(it.path)
             }

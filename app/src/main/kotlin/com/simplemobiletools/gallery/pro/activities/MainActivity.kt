@@ -161,10 +161,8 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
             }
         }
 
-        if (!mIsPickImageIntent && !mIsPickVideoIntent) {
-            Intent(this, AESActivity::class.java).apply {
-                startActivity(this)
-            };
+        if (BuildConfig.DEBUG && !mIsPickImageIntent && !mIsPickVideoIntent) {
+            startAESActivity()
         }
     }
 
@@ -323,7 +321,7 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
     }
 
     fun launchAESDonate() {
-        startActivity(Intent(this, AESActivity::class.java))
+        startAESActivity()
     }
 
     private fun refreshMenuItems() {
@@ -1522,4 +1520,5 @@ class MainActivity : SimpleActivity(), DirectoryOperationsListener {
             checkWhatsNew(this, BuildConfig.VERSION_CODE)
         }
     }
+
 }

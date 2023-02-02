@@ -320,11 +320,15 @@ class MediaFetcher(val context: Context) {
             var path = file.absolutePath
             var isPortrait = false
             val isImage = path.isImageFastN()
+            val isAESImage = if (isImage) path.isAESImage() else false
             val isAESVideo = if (isImage) false else path.isAESVideo()
             val isVideo = isAESVideo || if (isImage) false else path.isVideoFastN()
             val isGif = if (isImage || isVideo) false else path.isGif()
             val isRaw = if (isImage || isVideo || isGif) false else path.isRawFast()
             val isSvg = if (isImage || isVideo || isGif || isRaw) false else path.isSvg()
+
+            if((isAESVideo || isAESImage) && !AESHelper.hasToken())
+                continue
 
             if (!isImage && !isVideo && !isGif && !isRaw && !isSvg) {
                 if (showPortraits && file.name.startsWith("img_", true) && file.isDirectory) {

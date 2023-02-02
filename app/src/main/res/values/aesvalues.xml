@@ -30,4 +30,10 @@
         <item name="android:layout_height">wrap_content</item>
     </style>
 
+    <style name="styleBreadcrumbs" parent="TextAppearance.Material3.ActionBar.Title">
+        <item name="android:textSize">14sp</item>
+        <item name="fontFamily">@font/sfpro_display_medium</item>
+        <item name="android:ellipsize">middle</item>
+    </style>
+
 </resources>

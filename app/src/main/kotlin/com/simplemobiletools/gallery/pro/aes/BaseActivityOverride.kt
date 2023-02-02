@@ -1,6 +1,9 @@
 package com.simplemobiletools.gallery.pro.aes
 
+import android.content.ClipData
 import android.content.Intent
+import android.os.Bundle
+import android.os.PersistableBundle
 import com.simplemobiletools.commons.activities.AboutActivity
 import com.simplemobiletools.commons.activities.BaseSimpleActivity
 import com.simplemobiletools.commons.dialogs.FileConflictDialog
@@ -15,6 +18,41 @@ import java.io.File
 import javax.crypto.Cipher
 
 abstract class BaseActivityOverride : BaseSimpleActivity() {
+
+    val mSentPaths = ArrayList<String>()
+
+    override fun onCreate(savedInstanceState: Bundle??) {
+        super.onCreate(savedInstanceState)
+        handleSendIntent()
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        handleSendIntent()
+    }
+
+    fun handleSendIntent() {
+        if (intent.action == Intent.ACTION_SEND || intent.action == Intent.ACTION_SEND_MULTIPLE) {
+            val clipData = intent.clipData
+            clipData?.let { _ ->
+                mSentPaths.clear()
+                for (i in 0 until clipData.itemCount) {
+                    val path = getRealPathFromURI(clipData.getItemAt(i).uri)
+                    path?.let { mSentPaths.add(it) }
+                }
+            }
+        }
+    }
+
+    fun startAESActivity() {
+        Intent(this, AESActivity::class.java).apply {
+            if (mSentPaths.isNotEmpty())
+                putStringArrayListExtra("paths", ArrayList(mSentPaths))
+            mSentPaths.clear()
+            startActivity(this)
+        };
+    }
+
     override fun startActivity(intent: Intent) {
         if (intent.component != null && AboutActivity::class.java.name == intent.component!!
                 .shortClassName
@@ -22,6 +60,10 @@ abstract class BaseActivityOverride : BaseSimpleActivity() {
             //   intent.setClass(getApplicationContext(), SettingsActivity.class);
         }
         super.startActivity(intent)
+    }
+
+    fun deleteFiles(files: ArrayList<AESDirItem>) {
+
     }
 
     fun checkConflictsAES(

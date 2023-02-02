@@ -35,8 +35,8 @@ android {
 
     buildTypes {
         debug {
-            // we cannot change the original package name, else PhotoEditorSDK won't work
-            //applicationIdSuffix ".debug"
+//             we cannot change the original package name, else PhotoEditorSDK won't work
+            applicationIdSuffix ".debug"
         }
         release {
             minifyEnabled true
